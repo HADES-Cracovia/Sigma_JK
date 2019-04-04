@@ -102,10 +102,11 @@ void sigmaAna(){
    //miss mass spectra
    TH1F *hMMABC = new TH1F("hMMABC", "hMMABC", 100, -2300, 2350);
    TH1F *hMMABCpip = new TH1F("hMMABCpip", "hMMABCpip", 100, -3600, 2400);
+   TH1F *hMMABCpim = new TH1F("hMMABCpim", "hMMABCpim", 100, -3600, 2400);
    TH1F *hMMAB = new TH1F("hMMAB", "hMMAB", 100, -2300, 2350);
    TH1F *hMMBC = new TH1F("hMMBC", "hMMBC", 100, -2300, 2350);
    //inv mass spectra
-   TH1F *hinvMAC = new TH1F("hinvMAC", "hinvMAC", 100, 1055, 1350);
+   TH1F *hinvMAC = new TH1F("hinvMAC", "hinvMAC", 100, 1055, 2000);
    TH1F *hinvMAB = new TH1F("hinvMAB", "hinvMAB", 100, 1066, 1212);
 
    TH2F *hDN = new TH2F("hDN", "hDN", 100, 1066, 1212, 100, -3600, 2400);
@@ -235,24 +236,24 @@ void sigmaAna(){
    //read data
    TChain tree("T");
    //exp
-/*   for(int i = 106; i < 108; i++){
+   for(int i = 106; i < 128; i++){
        char inName[100];
        printf("apr07_day_%d.root\n",i);
        sprintf(inName, "/u/jkubos/analiza/gitdir/Sigma_JK/out_packed/apr07_day_%d.root", i);
-*/  //     sprintf(inName, "/home/joanna/Dokumenty/HADES/Sigma/out_packed/apr07_day_%d.root", i);
+//     sprintf(inName, "/home/joanna/Dokumenty/HADES/Sigma/out_packed/apr07_day_%d.root", i);
        //     sprintf(inName, "/mnt/disk1/hades/analiza/pp35/Sigma1385/pp35/exp/out_packed/apr07_day_%d.root", i);
        //     sprintf(inName, "/u/jkubos/analiza/gitdir/Sigma_JK/_exp__.root");
 
    //read no packed files
    //sim
-   ifstream f("inList");
+   /* ifstream f("inList");
    if(!f) cout << "FAILED TO OPEN DST FILE!" << endl;
    const string line;
    while(std::getline(f, line)){
        char inName[line.size() + 1];
        strcpy(inName, line.c_str());
      cout << "_" ;
-     tree.Add(inName);
+*/   tree.Add(inName);
        
      TFile *fin = TFile::Open(inName, "READ");
 
@@ -274,7 +275,7 @@ void sigmaAna(){
      Lp, pp, pimp, pipp, Sp,
      primVertR, LDecVertR, primVertZ, LDecVertZ,
      mtd, mtdLpi,
-     mmabc, mmabcpip, invmac, invmab, mmab, mmbc;
+     mmabc, mmabcpip, mmabcpim, invmac, invmab, mmab, mmbc;
 
    tree.SetBranchAddress("fLambda_M", &Lm);
    tree.SetBranchAddress("fpartA_M", &pm);
@@ -294,6 +295,7 @@ void sigmaAna(){
    tree.SetBranchAddress("fMinTrackDistLpi", &mtdLpi);
    tree.SetBranchAddress("fMMABC", &mmabc);
    tree.SetBranchAddress("fMMABCpip", &mmabcpip);
+   tree.SetBranchAddress("fMMABCpim", &mmabcpim);
    tree.SetBranchAddress("finvMAC", &invmac);
    tree.SetBranchAddress("finvMAB", &invmab);
    tree.SetBranchAddress("fMMAB", &mmab);
@@ -310,8 +312,8 @@ void sigmaAna(){
      tree.GetEntry(event); 
 
      //cut on miss mass ABC
-     if(mmabc < cmm1 || mmabcpip < cmm2)
-	continue;
+     if(mmabc < cmm1 || mmabcpim < cmm2)
+	 continue;
           
      //no cuts
      hLm -> Fill(Lm);
@@ -333,11 +335,12 @@ void sigmaAna(){
      hMinTrackDistLpi -> Fill(mtdLpi);
      hMMABC -> Fill(mmabc);
      hMMABCpip -> Fill(mmabcpip);
+     hMMABCpim -> Fill(mmabcpim);
      hinvMAC -> Fill(invmac);
      hinvMAB -> Fill(invmab);
      hMMAB -> Fill(mmab);
      hMMBC -> Fill(mmbc);
-     hDN -> Fill(invmab, mmabcpip);
+     hDN -> Fill(invmac, mmabcpim);
 
      /*   //MTD L scan
      for(int i = 0; i < 15; i++){
@@ -1269,6 +1272,7 @@ void sigmaAna(){
    
    hMMABC -> GetXaxis() -> SetTitle("MM_{p#pi^{-}#pi^{+}}");
    hMMABCpip -> GetXaxis() -> SetTitle("MM_{p#pi^{-}#pi^{+}} + M_{#pi^{+}}");
+   hMMABCpim -> GetXaxis() -> SetTitle("MM_{p#pi^{-}#pi^{+}} + M_{#pi^{-}}");
    hinvMAC -> GetXaxis() -> SetTitle("invM_{p#pi^{+}}");
    hinvMAB -> GetXaxis() -> SetTitle("invM_{p#pi^{-}}");
 
@@ -1326,7 +1330,7 @@ void sigmaAna(){
 
    
    //writing histos
-   TFile *fout = TFile::Open("./outputs/anaSigmaOut_sim_all.root", "RECREATE");
+   TFile *fout = TFile::Open("./outputs/anaSigmaOut_exp_all_nmm.root", "RECREATE");
    hLm -> Write();
    hpm -> Write();
    hpimm -> Write();
@@ -1379,6 +1383,7 @@ void sigmaAna(){
    
    hMMABC -> Write();
    hMMABCpip -> Write();
+   hMMABCpim -> Write();
    hinvMAC -> Write();
    hinvMAB -> Write();
    hMMAB -> Write();
