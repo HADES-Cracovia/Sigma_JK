@@ -1,6 +1,7 @@
 #include <TChain.h>
 #include "TFile.h"
 #include "TH1F.h"
+#include <TLine.h>
 #include <Riostream.h>
 #include <TCutG.h>
 #include <math.h>  
@@ -109,10 +110,33 @@ void sigmaAna(){
    TH1F *hinvMAC = new TH1F("hinvMAC", "hinvMAC", 200, 1055, 4000);
    TH1F *hinvMAB = new TH1F("hinvMAB", "hinvMAB", 200, 1066, 4000);
 
+   int dminx = -2300;
+   int dmaxx = 2350;
+   int dminy = 1000;
+   int dmaxy = 2500;
+   int nbins3 = 100;
    TH2F *hDN = new TH2F("hDN", "hDN", 100, 1066, 1212, 100, -3600, 2400);
-   TH2F *hDpim = new TH2F("hDpim", "hDpim", 100, -2300, 2350, 200, 1000, 2500);
-   TH2F *hDpip = new TH2F("hDpip", "hDpip", 100, -2300, 2350, 200, 1000, 2500);
-
+   TH2F *hDpim = new TH2F("hDpim", "hDpim", nbins3, dminx, dmaxx, nbins3, dminy, dmaxy);
+   TH2F *hDpip = new TH2F("hDpip", "hDpip", nbins3, dminx, dmaxx, nbins3, dminy, dmaxy);
+   TCanvas *cDpip = new TCanvas("cDpip", "cDpip");
+   
+   
+   TH1F *hLm0 = new TH1F("hLm0", "#Lambda mass (no cuts)", 200, 1060, 1200);
+   TH1F *hSm0 = new TH1F("hSm0", "#Sigma mass (no cuts)", 100, 1300, 1450);
+   TH1F *hMinTrackDist0 = new TH1F("hMinTrackDist0", "MinTrackDist p-#pi^{-} (no cuts)", 100, -15, 42);
+   TH1F *hMinTrackDistLpi0 = new TH1F("hMinTrackDistLpi0", "MinTrackDist #Lambda-#pi^{+} (no cuts)", 100, 10, 110);
+   TH1F *hPrimVertR0 = new TH1F("hPrimVertR0", "Primary vertex R (no cuts)", 100, -100, 150);
+   TH1F *hLDecVertR0 = new TH1F("hLDecVertR0", "Lambda decay vertex R (no cuts)", 100, -100, 150);
+   TH1F *hdLVR0 = new TH1F("hdLVR0", "Lambda decay vertex - Primary Vertex (no cuts)", 100, -100, 150);
+   TH1F *hPrimVertZ0 = new TH1F("hPrimVertZ0", "Primary vertex Z (no cuts)", 100, -100, 150);
+   TH1F *hLDecVertZ0 = new TH1F("hLDecVertZ0", "Lambda decay vertex Z (no cuts)", 100, -100, 150);
+   TH1F *hMMABC0 = new TH1F("hMMABC0", "hMMABC (no cuts)", 100, -2300, 2350);
+   TH1F *hinvMAC0 = new TH1F("hinvMAC0", "hinvMAC (no cuts)", 200, 1055, 4000);
+   TH1F *hinvMAB0 = new TH1F("hinvMAB0", "hinvMAB (no cuts)", 200, 1066, 4000);
+   TH2F *hDpim0 = new TH2F("hDpim0", "hDpim (no cuts)", nbins3, dminx, dmaxx, nbins3, dminy, dmaxy);
+   TH2F *hDpip0 = new TH2F("hDpip0", "hDpip (no cuts)", nbins3, dminx, dmaxx, nbins3, dminy, dmaxy);
+   
+   //vertex studies
    int dvertmin = -100;
    int dvertmax = 100;
    int vertmin = -300;
@@ -139,11 +163,41 @@ void sigmaAna(){
    TH1F* hgeantxvertexA = new TH1F("hgeantxvertexA", "(vertl_sim)x", nbins2, vertmin, vertmax);
    TH1F* hgeantyvertexA = new TH1F("hgeantyvertexA", "(vertl_sim)y", nbins2, vertmin, vertmax);
    TH1F* hgeantzvertexA = new TH1F("hgeantzvertexA", "(vertl_sim)z", nbins2, vertmin, vertmax);
-
+   TH1F* hgeantxvertexB = new TH1F("hgeantxvertexB", "(vertl_sim)x", nbins2, vertmin, vertmax);
+   TH1F* hgeantyvertexB = new TH1F("hgeantyvertexB", "(vertl_sim)y", nbins2, vertmin, vertmax);
+   TH1F* hgeantzvertexB = new TH1F("hgeantzvertexB", "(vertl_sim)z", nbins2, vertmin, vertmax);
+   
    TH1F* hvertex_recoGeant_x = new TH1F("hvertex_recoGeant_x", "vertex_recoGeant_x", nbins2, -1000, 1000);
    TH1F* hvertex_recoGeant_y = new TH1F("hvertex_recoGeant_y", "vertex_recoGeant_y", nbins2, dvertmin, dvertmax);
    TH1F* hvertex_recoGeant_z = new TH1F("hvertex_recoGeant_z", "vertex_recoGeant_z", nbins2, dvertmin, dvertmax);
 
+   //part A
+   TH1F* hMomAResx = new TH1F("hMomAResx", "MomAResx", nbins1, dmommin, dmommax);
+   TH1F* hMomAResy = new TH1F("hMomAResy", "MomAResy", nbins1, dmommin, dmommax);
+   TH1F* hMomAResz = new TH1F("hMomAResz", "MomAResz", nbins1, dmommin, dmommax);
+   
+   TH1F* hMomArecox = new TH1F("hMomArecox", "MomArecox", nbins1, mommin, mommax);
+   TH1F* hMomArecoy = new TH1F("hMomArecoy", "MomArecoy", nbins1, mommin, mommax);
+   TH1F* hMomArecoz = new TH1F("hMomArecoz", "MomArecoz", nbins1, momzmin, momzmax);
+
+   TH1F* hMomAGeax = new TH1F("hMomAGeax", "MomAGeax", nbins1, mommin, mommax);
+   TH1F* hMomAGeay = new TH1F("hMomAGeay", "MomAGeay", nbins1, mommin, mommax);
+   TH1F* hMomAGeaz = new TH1F("hMomAGeaz", "MomAGeaz", nbins1, momzmin, momzmax);
+
+   //part B
+   TH1F* hMomBResx = new TH1F("hMomBResx", "MomBResx", nbins1, dmommin, dmommax);
+   TH1F* hMomBResy = new TH1F("hMomBResy", "MomBResy", nbins1, dmommin, dmommax);
+   TH1F* hMomBResz = new TH1F("hMomBResz", "MomBResz", nbins1, dmommin, dmommax);
+   
+   TH1F* hMomBrecox = new TH1F("hMomBrecox", "MomBrecox", nbins1, mommin, mommax);
+   TH1F* hMomBrecoy = new TH1F("hMomBrecoy", "MomBrecoy", nbins1, mommin, mommax);
+   TH1F* hMomBrecoz = new TH1F("hMomBrecoz", "MomBrecoz", nbins1, momzmin, momzmax);
+
+   TH1F* hMomBGeax = new TH1F("hMomBGeax", "MomBGeax", nbins1, mommin, mommax);
+   TH1F* hMomBGeay = new TH1F("hMomBGeay", "MomBGeay", nbins1, mommin, mommax);
+   TH1F* hMomBGeaz = new TH1F("hMomBGeaz", "MomBGeaz", nbins1, momzmin, momzmax);
+
+   //Lambda
    TH1F* hMomResx = new TH1F("hMomResx", "MomResx", nbins1, dmommin, dmommax);
    TH1F* hMomResy = new TH1F("hMomResy", "MomResy", nbins1, dmommin, dmommax);
    TH1F* hMomResz = new TH1F("hMomResz", "MomResz", nbins1, dmommin, dmommax);
@@ -155,6 +209,7 @@ void sigmaAna(){
    TH1F* hMomGeax = new TH1F("hMomGeax", "MomGeax", nbins1, mommin, mommax);
    TH1F* hMomGeay = new TH1F("hMomGeay", "MomGeay", nbins1, mommin, mommax);
    TH1F* hMomGeaz = new TH1F("hMomGeaz", "MomGeaz", nbins1, momzmin, momzmax);
+
 
    TH1F* hrA = new TH1F("hrA", "hrA", nbins2, -100, 100);
    TH1F* hrB = new TH1F("hrB", "hrB", nbins2, -100, 100);
@@ -284,24 +339,26 @@ void sigmaAna(){
    */
    //read data
    TChain tree("T");
-   //exp
-//>>   for(int i = 106; i < 128; i++){
-//>>      char inName[100];
-//>>       printf("apr07_day_%d.root\n",i);
-//>>       sprintf(inName, "/u/jkubos/analiza/gitdir/Sigma_JK/out_packed/apr07_day_%d.root", i);
+/*   //exp
+   for(int i = 106; i < 128; i++){
+      char inName[100];
+       printf("apr07_day_%d.root\n",i);
+       sprintf(inName, "/u/jkubos/analiza/gitdir/Sigma_JK/out_packed/apr07_day_%d.root", i);
 //     sprintf(inName, "/home/joanna/Dokumenty/HADES/Sigma/out_packed/apr07_day_%d.root", i);
        //     sprintf(inName, "/mnt/disk1/hades/analiza/pp35/Sigma1385/pp35/exp/out_packed/apr07_day_%d.root", i);
        //     sprintf(inName, "/u/jkubos/analiza/gitdir/Sigma_JK/_exp__.root");
-
+//end exp
+       */
    //read no packed files
    //sim
-   ifstream f("inList_test");
+   ifstream f("inList_all");
    if(!f) cout << "FAILED TO OPEN DST FILE!" << endl;
    const string line;
    while(std::getline(f, line)){
        char inName[line.size() + 1];
        strcpy(inName, line.c_str());
        cout << "_" ;
+//end sim
      tree.Add(inName);
        
      TFile *fin = TFile::Open(inName, "READ");
@@ -324,12 +381,14 @@ void sigmaAna(){
      Lp, pp, pimp, pipp, Sp,
      primVertR, LDecVertR, primVertZ, LDecVertZ,
      mtd, mtdLpi,
-     mmabc, mmabcpip, mmabcpim, invmac, invmab, mmab, mmbc,
+       mmabc, mmabcpip, mmabcpim, invmac, invmab, mmab, mmbc,
        dvertlX, dvertlY, dvertlZ, dvertlR ,
        vx_lambdaX, vx_lambdaY, vx_lambdaZ,
        geantxvertexA, geantyvertexA, geantzvertexA,
        vertex_recogeant_x, vertex_recogeant_y, vertex_recogeant_z,
        momresx, momresy, momresz, momgeax, momgeay, momgeaz, momrecox, momrecoy, momrecoz,
+       momaresx, momaresy, momaresz, momageax, momageay, momageaz, momarecox, momarecoy, momarecoz,
+       mombresx, mombresy, mombresz, mombgeax, mombgeay, mombgeaz, mombrecox, mombrecoy, mombrecoz,
        r_hA, r_vB,
        realLambdaM, lmass2;
 
@@ -369,6 +428,15 @@ void sigmaAna(){
    tree.SetBranchAddress("fvertex_recoGeant_x", &vertex_recogeant_x);
    tree.SetBranchAddress("fvertex_recoGeant_y", &vertex_recogeant_y);
    tree.SetBranchAddress("fvertex_recoGeant_z", &vertex_recogeant_z);
+   tree.SetBranchAddress("fMomAResx", &momaresx);
+   tree.SetBranchAddress("fMomAResy", &momaresy);
+   tree.SetBranchAddress("fMomAResz", &momaresz);
+   tree.SetBranchAddress("fGeaAPx", &momageax);
+   tree.SetBranchAddress("fGeaAPy", &momageay);
+   tree.SetBranchAddress("fGeaAPz", &momageaz);
+   tree.SetBranchAddress("fMomArecox", &momarecox);
+   tree.SetBranchAddress("fMomArecoy", &momarecoy);
+   tree.SetBranchAddress("fMomArecoz", &momarecoz);
    tree.SetBranchAddress("fMomResx", &momresx);
    tree.SetBranchAddress("fMomResy", &momresy);
    tree.SetBranchAddress("fMomResz", &momresz);
@@ -393,7 +461,7 @@ void sigmaAna(){
      }
      tree.GetEntry(event); 
 
-     if(Lm > 1105 && Lm < 1125){
+/*     if(Lm > 1105 && Lm < 1125){
 	 //vert sim - vert reco
 	 hdvertlX -> Fill(dvertlX);                                                                               
 	 hdvertlY -> Fill(dvertlY);                                                                               
@@ -410,6 +478,16 @@ void sigmaAna(){
 	 hvertex_recoGeant_y -> Fill(vertex_recogeant_y);
 	 hvertex_recoGeant_z -> Fill(vertex_recogeant_z);
 	 
+	 hMomAResx -> Fill(momaresx);
+	 hMomAResy -> Fill(momaresy);
+	 hMomAResz -> Fill(momaresz);
+	 hMomAGeax -> Fill(momageax);
+	 hMomAGeay -> Fill(momageay);
+	 hMomAGeaz -> Fill(momageaz);
+	 hMomArecox -> Fill(momarecox);
+	 hMomArecoy -> Fill(momarecoy);
+	 hMomArecoz -> Fill(momarecoz);
+
 	 hMomResx -> Fill(momresx);
 	 hMomResy -> Fill(momresy);
 	 hMomResz -> Fill(momresz);
@@ -427,11 +505,27 @@ void sigmaAna(){
 	 
 	 hrealLambdaM -> Fill(realLambdaM);
      }
+*/
+     hLm0 -> Fill(Lm);
+     hSm0 -> Fill(Sm);
+     hPrimVertZ0 -> Fill(primVertZ);
+     hLDecVertZ0 -> Fill(LDecVertZ);
+     hPrimVertR0 -> Fill(primVertR);
+     hLDecVertR0 -> Fill(LDecVertR);
+     hdLVR0 -> Fill(LDecVertR - primVertR);
+     hMinTrackDist0 -> Fill(mtd);
+     hMinTrackDistLpi0 -> Fill(mtdLpi);
+     hMMABC0 -> Fill(mmabc);
+     hinvMAC0 -> Fill(invmac);
+     hinvMAB0 -> Fill(invmab);
+     hDpim0 -> Fill(mmabc, invmab);
+     hDpip0 -> Fill(mmabc, invmac);
+
      //cut on miss mass ABC
      if(mmabc < cmm1 || invmac > cmm2)
 	 continue;
           
-     //no cuts
+     //no topological cuts
      hLm -> Fill(Lm);
      hLp -> Fill(Lp);
      hpm -> Fill(pm);
@@ -456,7 +550,7 @@ void sigmaAna(){
      hinvMAB -> Fill(invmab);
      hMMAB -> Fill(mmab);
      hMMBC -> Fill(mmbc);
-     hDN -> Fill(invmac, mmabcpim);
+     hDN -> Fill(invmac, mmabc);
      hDpim -> Fill(mmabc, invmab);
      hDpip -> Fill(mmabc, invmac);
 
@@ -512,17 +606,17 @@ void sigmaAna(){
 	   hrB -> Fill(r_vB);
 */
 	   if(Lm > cLm1 && Lm < cLm2){
-	     hLm_mtdL_dLV_Lm -> Fill(Lm);
-	     hSm_mtdL_dLV_Lm -> Fill(Sm);
+	       hLm_mtdL_dLV_Lm -> Fill(Lm);
+	       hSm_mtdL_dLV_Lm -> Fill(Sm);
 
-	     if(mtdLpi < cmtdLpi){
-		 hSm_mtdS -> Fill(Sm);
-		 if(primVertZ > cpvz1 && primVertZ < cpvz2)
-		     hSm_mtdS_pvz -> Fill(Sm);
-	     }
+	       if(mtdLpi < cmtdLpi){
+		   hSm_mtdS -> Fill(Sm);
+		   if(primVertZ > cpvz1 && primVertZ < cpvz2)
+		       hSm_mtdS_pvz -> Fill(Sm);
+	       }
 	   }
-         }
-	 //}
+       }
+       //}
      }
      //dLV
      if((LDecVertR - primVertR) > csVL1){// && (LDecVertR - primVertR) < csVL2){
@@ -1411,8 +1505,48 @@ void sigmaAna(){
    hDpip -> GetXaxis() -> SetTitle("MM_{p#pi^{-}#pi^{+}}");
    hDpip -> GetYaxis() -> SetTitle("invM_{p#pi^{+}}");
 
+   hLm0 -> GetXaxis() -> SetTitle("m_{p#pi^{-}} [MeV]");
+   hSm0 -> GetXaxis() -> SetTitle("m_{p#pi^{-}#pi^{+}} [MeV]");
+   hMinTrackDist0 -> GetXaxis() -> SetTitle("MTD_{p#pi^{-}} [mm]");
+   hMinTrackDistLpi0 -> GetXaxis() -> SetTitle("MTD_{#Lambda#pi^{+}} [mm]");
+   hPrimVertZ0 -> GetXaxis() -> SetTitle("PrimVertZ [mm]");
+   hLDecVertZ0 -> GetXaxis() -> SetTitle("#Lambda DecayVertZ [mm]");
+   hPrimVertR0 -> GetXaxis() -> SetTitle("PrimVertR [mm]");
+   hLDecVertR0 -> GetXaxis() -> SetTitle("#Lambda DecayVertR [mm]");
+   hdLVR0 -> GetXaxis() -> SetTitle("#Lambda DecVartR - PrimVertR [mm]");
+   hMMABC0 -> GetXaxis() -> SetTitle("MM_{p#pi^{-}#pi^{+}}");
+   hinvMAC0 -> GetXaxis() -> SetTitle("invM_{p#pi^{+}}");
+   hinvMAB0 -> GetXaxis() -> SetTitle("invM_{p#pi^{-}}");
+   hDpim0 -> GetXaxis() -> SetTitle("MM_{p#pi^{-}#pi^{+}}");
+   hDpip0 -> GetXaxis() -> SetTitle("MM_{p#pi^{-}#pi^{+}}");
+
+   hLm0 -> GetYaxis() -> SetTitle("#");
+   hSm0 -> GetYaxis() -> SetTitle("#");
+   hMinTrackDist0 -> GetYaxis() -> SetTitle("#");
+   hMinTrackDistLpi0 -> GetYaxis() -> SetTitle("#");
+   hPrimVertZ0 -> GetYaxis() -> SetTitle("#");
+   hLDecVertZ0 -> GetYaxis() -> SetTitle("#");
+   hPrimVertR0 -> GetYaxis() -> SetTitle("#");
+   hLDecVertR0 -> GetYaxis() -> SetTitle("#");
+   hdLVR0 -> GetYaxis() -> SetTitle("#");
+   hMMABC0 -> GetYaxis() -> SetTitle("#");
+   hinvMAC0 -> GetYaxis() -> SetTitle("#");
+   hinvMAB0 -> GetYaxis() -> SetTitle("#");
+   hDpim0 -> GetYaxis() -> SetTitle("invM_{p#pi^{-}}");
+   hDpip0 -> GetYaxis() -> SetTitle("invM_{p#pi^{+}}");
+
+   TLine *lm1 = new TLine(cmm1, 0, cmm1, dmaxy);
+   TLine *lm2 = new TLine(0, cmm2, dmaxx, cmm2);
+   lm1 -> SetLineWidth(2);
+   lm2 -> SetLineWidth(2);
+   cDpip -> cd();
+   gPad -> SetLogz();
+   hDpip0 -> Draw("colz");
+   lm1 -> Draw("same");
+   lm2 -> Draw("same");
+   
    //vert_sim - vert_rec
-   hdvertlX -> GetXaxis() -> SetTitle("d(vertL_sim - vertL_rec)x [mm]");
+/*   hdvertlX -> GetXaxis() -> SetTitle("d(vertL_sim - vertL_rec)x [mm]");
    hdvertlY -> GetXaxis() -> SetTitle("d(vertL_sim - vertL_rec)y [mm]");
    hdvertlZ -> GetXaxis() -> SetTitle("d(vertL_sim - vertL_rec)z [mm]");
    hdvertlR -> GetXaxis() -> SetTitle("d(vertL_sim - vertL_rec)r [mm]");
@@ -1479,7 +1613,55 @@ void sigmaAna(){
    cvertex_recoGeant -> cd(3);
    hvertex_recoGeant_z -> Draw();
    
-   //momentum from simulation
+   //proton momentum from simulation
+   hMomAGeax -> GetXaxis() -> SetTitle("(momPsim)x ");
+   hMomAGeay -> GetXaxis() -> SetTitle("(momPsim)y ");
+   hMomAGeaz -> GetXaxis() -> SetTitle("(momPsim)z ");
+   hMomAGeax -> GetYaxis() -> SetTitle("counts");
+   hMomAGeay -> GetYaxis() -> SetTitle("counts");
+   hMomAGeaz -> GetYaxis() -> SetTitle("counts");
+   TCanvas *cMomAGea = new TCanvas("cMomAGea", "cMomAGea");
+   cMomAGea -> Divide(2,2);
+   cMomAGea -> cd(1);
+   hMomAGeax -> Draw();
+   cMomAGea -> cd(2);
+   hMomAGeay -> Draw();
+   cMomAGea -> cd(3);
+   hMomAGeaz -> Draw();
+   
+   //proton momentum reconstructed
+   hMomArecox -> GetXaxis() -> SetTitle("(momPreco)x ");
+   hMomArecoy -> GetXaxis() -> SetTitle("(momPreco)y ");
+   hMomArecoz -> GetXaxis() -> SetTitle("(momPreco)z ");
+   hMomArecox -> GetYaxis() -> SetTitle("counts");
+   hMomArecoy -> GetYaxis() -> SetTitle("counts");
+   hMomArecoz -> GetYaxis() -> SetTitle("counts");
+   TCanvas *cMomAreco = new TCanvas("cMomAreco", "cMomAreco");
+   cMomAreco -> Divide(2,2);
+   cMomAreco -> cd(1);
+   hMomArecox -> Draw();
+   cMomAreco -> cd(2);
+   hMomArecoy -> Draw();
+   cMomAreco -> cd(3);
+   hMomArecoz -> Draw();
+   
+   //proton momentum resolution
+   hMomAResx -> GetXaxis() -> SetTitle("(momPreco - momPsim)x ");
+   hMomAResy -> GetXaxis() -> SetTitle("(momPreco - momPsim)y ");
+   hMomAResz -> GetXaxis() -> SetTitle("(momPreco - momPsim)z ");
+   hMomAResx -> GetYaxis() -> SetTitle("counts");
+   hMomAResy -> GetYaxis() -> SetTitle("counts");
+   hMomAResz -> GetYaxis() -> SetTitle("counts");
+   TCanvas *cMomARes = new TCanvas("cMomARes", "cMomARes");
+   cMomARes -> Divide(2,2);
+   cMomARes -> cd(1);
+   hMomAResx -> Draw();
+   cMomARes -> cd(2);
+   hMomAResy -> Draw();
+   cMomARes -> cd(3);
+   hMomAResz -> Draw();
+
+   //L momentum from simulation
    hMomGeax -> GetXaxis() -> SetTitle("(momLsim)x ");
    hMomGeay -> GetXaxis() -> SetTitle("(momLsim)y ");
    hMomGeaz -> GetXaxis() -> SetTitle("(momLsim)z ");
@@ -1495,7 +1677,7 @@ void sigmaAna(){
    cMomGea -> cd(3);
    hMomGeaz -> Draw();
    
-   //momentum reconstructed
+   //L momentum reconstructed
    hMomxLreco -> GetXaxis() -> SetTitle("(momLreco)x ");
    hMomyLreco -> GetXaxis() -> SetTitle("(momLreco)y ");
    hMomzLreco -> GetXaxis() -> SetTitle("(momLreco)z ");
@@ -1511,7 +1693,7 @@ void sigmaAna(){
    cMomLreco -> cd(3);
    hMomzLreco -> Draw();
    
-   //momentum resolution
+   //L momentum resolution
    hMomResx -> GetXaxis() -> SetTitle("(momLreco - momLsim)x ");
    hMomResy -> GetXaxis() -> SetTitle("(momLreco - momLsim)y ");
    hMomResz -> GetXaxis() -> SetTitle("(momLreco - momLsim)z ");
@@ -1526,15 +1708,15 @@ void sigmaAna(){
    hMomResy -> Draw();
    cMomRes -> cd(3);
    hMomResz -> Draw();
-
+*/
    hLmass2 -> GetXaxis() -> SetTitle("L mass [MeV]");
    hLmass2 -> GetYaxis() -> SetTitle("counts");
    
-   hrA -> GetXaxis() -> SetTitle("r_#pi^{-} [mm]");
+   /* hrA -> GetXaxis() -> SetTitle("r_#pi^{-} [mm]");
    hrB -> GetXaxis() -> SetTitle("r_p [mm]");
    hrA -> GetYaxis() -> SetTitle("counts");
    hrB -> GetYaxis() -> SetTitle("counts");
-
+   */
    hrealLambdaM -> GetXaxis() -> SetTitle("m(#Lambda) [meV]");
    hrealLambdaM -> GetYaxis() -> SetTitle("counts");
 
@@ -1589,7 +1771,7 @@ void sigmaAna(){
 
    
    //writing histos
-   TFile *fout = TFile::Open("./outputs/anaSigmaOut_sim_test_mc3.root", "RECREATE");
+   TFile *fout = TFile::Open("./outputs/anaSigmaOut_sim_001.root", "RECREATE");
    hLm -> Write();
    hpm -> Write();
    hpimm -> Write();
@@ -1651,9 +1833,25 @@ void sigmaAna(){
    hMMBC -> Write();
    hDN -> Write();
    hDpim -> Write();
-   hDpip -> Write();
 
-   hdvertlX -> Write();
+   hDpip -> Write();
+   hLm0 -> Write();
+   hSm0 -> Write();
+   hMinTrackDist0 -> Write();
+   hMinTrackDistLpi0 -> Write();
+   hPrimVertR0 -> Write();
+   hLDecVertR0 -> Write();
+   hdLVR0 -> Write();
+   hPrimVertZ0 -> Write();
+   hLDecVertZ0 -> Write();
+   hMMABC0 -> Write();
+   hinvMAC0 -> Write();
+   hinvMAB0 -> Write();
+   hDpim0 -> Write();
+   hDpip0 -> Write();
+   cDpip -> Write();
+
+/*   hdvertlX -> Write();
    hdvertlY -> Write();
    hdvertlZ -> Write();
    hdvertlR -> Write();
@@ -1674,6 +1872,19 @@ void sigmaAna(){
    hvertex_recoGeant_z -> Write();
    cvertex_recoGeant -> Write();
 
+   hMomAGeax -> Write();
+   hMomAGeay -> Write();
+   hMomAGeaz -> Write();
+   cMomAGea -> Write();
+   hMomArecox -> Write();
+   hMomArecoy -> Write();
+   hMomArecoz -> Write();
+   cMomAreco -> Write();
+   hMomAResx -> Write();
+   hMomAResy -> Write();
+   hMomAResz -> Write();
+   cMomARes -> Write();
+
    hMomGeax -> Write();
    hMomGeay -> Write();
    hMomGeaz -> Write();
@@ -1686,12 +1897,12 @@ void sigmaAna(){
    hMomResy -> Write();
    hMomResz -> Write();
    cMomRes -> Write();
-
+*/
    hLmass2 -> Write();
    
-   hrA -> Write();
+   /* hrA -> Write();
    hrB -> Write();
-
+   */
    hrealLambdaM -> Write();
    
    heventNo -> Write();
