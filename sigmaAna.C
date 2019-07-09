@@ -314,16 +314,20 @@ void sigmaAna(){
    
    //variables for the MTD L scan
    int mtdLi = 0;
-   TH1F *hmtdLscan[15];
+   TH1F *hmtdLscan[15], *hmtdLscanSigma[15];
    TCanvas *cMtdScan = new TCanvas("cMtdScan", "cMtdScan", 1200, 800);
    cMtdScan -> Divide(5,3);
-   char nameMtdLi[30];
+   TCanvas *cMtdScanSigma = new TCanvas("cMtdScanSigma", "cMtdScanSigma", 1200, 800);
+   cMtdScanSigma -> Divide(5,3);
+   char nameMtdLi[30], nameMtdLiSigma[30];
    double mtdVal[15], sgnVal[15];
    double sg, bg;
    for(int i = 0; i < 15; i++){
        mtdLi = (i+1)*2;
        sprintf(nameMtdLi, "hmtdLscan_%d", mtdLi);
-       hmtdLscan[i] = new TH1F("hmtdLscan", nameMtdLi, 200, 1060, 1200);
+       hmtdLscan[i] = new TH1F("hmtdLscan", nameMtdLi, 200, lm1, lm2);
+       sprintf(nameMtdLiSigma, "hmtdLscanSigma_%d", mtdLi);
+       hmtdLscanSigma[i] = new TH1F("hmtdLscanSigma", nameMtdLiSigma, 200, sm1, sm2);
    }
    //variables for the dLV scan
 /*   int dLVi = 0;
@@ -362,11 +366,11 @@ void sigmaAna(){
 //variables for the MtdL(dVert) scan
    int dverti_mtdL = 0;
    int mtdLi_dvert = 0;
-   TCanvas *cmtdLdvert[15];
-   TH1F *hdvertmtdLscan[15][15];
+   TCanvas *cmtdLdvert[15], *cmtdLdvertSigma[15];
+   TH1F *hdvertmtdLscan[15][15], *hdvertmtdLscanSigma[15][15];
    TGraph2D *gdVertmtdL = new TGraph2D();
-   char namedverti_mtdL[30];
-   char nameCanv[30];
+   char namedverti_mtdL[30], namedverti_mtdLSigma[30];
+   char nameCanv[30], nameCanvSigma[30];
    double sgnVal4[15][15];
    double dvertVal[15], sgnVal4a[15];
    double sg4, bg4;
@@ -374,11 +378,16 @@ void sigmaAna(){
        sprintf(nameCanv, "cmtdLdvert_%d", i);
        cmtdLdvert[i] = new TCanvas(nameCanv, nameCanv, 1200, 800);
        cmtdLdvert[i] -> Divide(5,3);
+       sprintf(nameCanvSigma, "cmtdLdvertSigma_%d", i);
+       cmtdLdvertSigma[i] = new TCanvas(nameCanvSigma, nameCanvSigma, 1200, 800);
+       cmtdLdvertSigma[i] -> Divide(5,3);
        mtdLi_dvert = (i+1)*2;
        for(int j = 0; j < 15; j++){
 	   dverti_mtdL = (j+1)*5;
 	   sprintf(namedverti_mtdL, "hdvert_%d_mtdL_%d_scan", dverti_mtdL, mtdLi_dvert);
-	   hdvertmtdLscan[i][j] = new TH1F("hdvertmtdLscan", namedverti_mtdL, 200, 1060, 1200);
+	   hdvertmtdLscan[i][j] = new TH1F("hdvertmtdLscan", namedverti_mtdL, 200, lm1, lm2);
+	   sprintf(namedverti_mtdLSigma, "hdvert_%d_mtdL_%d_scanSigma", dverti_mtdL, mtdLi_dvert);
+	   hdvertmtdLscanSigma[i][j] = new TH1F("hdvertmtdLscanSigma", namedverti_mtdL, 200, sm1, sm2);
        }
    }
    //<<<<end variables for the MTD L scan
@@ -393,7 +402,7 @@ void sigmaAna(){
    for(int i = 0; i < 15; i++){
        mtdLpii = (i+1)*2;
        sprintf(nameMtdLpii, "hmtdLpiscan_%d", mtdLpii);
-       hmtdLpiscan[i] = new TH1F("hmtdLpiscan", nameMtdLpii, 100, 1330, 1480);
+       hmtdLpiscan[i] = new TH1F("hmtdLpiscan", nameMtdLpii, 200, sm1, sm2);
    }                      
    
    //read data
@@ -669,11 +678,16 @@ void sigmaAna(){
 	 mtdLi = (i+1)*2;
 	 if(mtd < mtdLi){
 	     hmtdLscan[i] -> Fill(Lm);
+	     if(Lm > cLm1 && Lm < cLm2)
+		 hmtdLscanSigma[i] -> Fill(Sm);
 	     //
 	     for(int j = 0; j < 15; j++){
 		 dverti_mtdL = (j+1)*5;
-		 if(dVert > dverti_mtdL)
+		 if(dVert > dverti_mtdL){
 		     hdvertmtdLscan[i][j] -> Fill(Lm);
+		     if(Lm > cLm1 && Lm < cLm2)
+			 hdvertmtdLscanSigma[i][j] -> Fill(Sm);
+		 }
 	     }
 	 }
      }
@@ -714,7 +728,7 @@ void sigmaAna(){
 	       hLm_mtdL_dvert_Lm -> Fill(Lm);
 	       hSm_mtdL_dvert_Lm -> Fill(Sm);
 
-	       if(mtdLpi < mtdLpi){
+	       if(mtdLpi < cmtdLpi){
 		   hSm_mtdS -> Fill(Sm);
 	       }
 	   }
@@ -736,63 +750,80 @@ void sigmaAna(){
    printf("\n");
 
    //MTD L scan
+   double partmpL[15];
+   TF1 *ftmp, *fbgtmp, *fsigtmp;
+   TH1F *htmp;
+   char namePeaktmp[50];
+   double a = 1085;
+   double b = 1150;
+   double fa = 1105;
+   double fb = 1125;
    for(int i = 0; i < 15; i++){
        mtdLi = (i+1)*2;
        //calc Sgn for each mtdL value
        cMtdScan -> cd(i+1);
-       TH1F *htmp = (TH1F*)hmtdLscan[i] -> Clone("htmp");
+       htmp = (TH1F*)hmtdLscan[i] -> Clone("htmp");
        const char *hnametmp = htmp -> GetName();
-       char namePeaktmp[50];
+       namePeaktmp[50] = 0;
        sprintf(namePeaktmp, "%s_peak", hnametmp);
        
        cout << "--" << i << "--" << endl;
-       TF1 * ftmp = new TF1("ftmp", "gaus(0)+gaus(3)+pol2(6)", 1090, 1140);
-       ftmp -> SetParameters(
-	   3.92029e+03,1.11517e+03,1.64829e+00,
-	   1.30091e+03,1.11477e+03,4.04957e+00,
-	   -1.04526e+06,9.41713e+02
-	   );
-       ftmp -> SetParLimits(0, 0, 100000);
-       ftmp -> SetParLimits(1, 1110, 1120);
-       ftmp -> SetParLimits(2, 0, 10);
-       ftmp -> SetParLimits(3, 0, 100000);
-       ftmp -> SetParLimits(4, 1080, 1120);
-       ftmp -> SetParLimits(5, 0, 10);
-       htmp -> Fit("ftmp", "0", "", 1100, 1130);
-       htmp -> Fit("ftmp", "0", "", 1100, 1130);
+
+       ftmp = new TF1("ftmp", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol7(4)", a, b);
+       fbgtmp = new TF1("fbgtmp", "pol7(0)", a, b);
+       fsigtmp = new TF1("fsigtmp", "[0]*TMath::Voigt(x+[1],[2],[3])", a, b);
+
+       if(i == 0){
+	   ftmp -> SetParameters(
+	       1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
+	       -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
+	       );
+       }else{
+	   ftmp -> SetParameters(partmpL);
+       }
+       
+       htmp -> Fit("ftmp", "0", "", a, b);
+       htmp -> Fit("ftmp", "0", "", a, b);
        htmp -> SetName(namePeaktmp);
-       TF1 * fsigtmp = new TF1("fsigtmp", "gaus(0)+gaus(3)", 1105, 1125);
-       TF1 * fbgtmp = new TF1("fbgtmp", "pol2(0)", 1105, 1125);
-       double partmp[15];
-       ftmp -> GetParameters(partmp);
-       fsigtmp -> SetParameters(partmp);
-       fbgtmp -> SetParameters(&partmp[6]);
+
+       partmpL[] = 0;
+       ftmp -> GetParameters(partmpL);
+       fsigtmp -> SetParameters(partmpL);
+       fbgtmp -> SetParameters(&partmpL[4]);
+
+       ftmp -> SetLineColor(kBlack);
+       fsigtmp -> SetLineColor(kGreen);
+       fbgtmp -> SetLineColor(kRed);
+      
+//       TH1F *histSigtmp = (TH1F*)htmp -> Clone("histSigtmp");
+//       TH1F *histBGtmp = (TH1F*)htmp -> Clone("histBGtmp");
+//       histSigtmp -> Add(fbgtmp, -1);
+//       histSigtmp -> SetLineColor(kGreen);
+//       histBGtmp -> Add(fsigtmp, -1);
+//       histBGtmp -> SetLineColor(kRed);
+//       histBGtmp -> SetMarkerColor(kRed);
+//       histBGtmp -> SetMarkerStyle(20);
+//       histBGtmp -> SetMarkerSize(.7);
        
-       TH1F *histSigtmp = (TH1F*)htmp -> Clone("histSigtmp");
-       TH1F *histBGtmp = (TH1F*)htmp -> Clone("histBGtmp");
-       histSigtmp -> Add(fbgtmp, -1);
-       histSigtmp -> SetLineColor(kGreen);
-       histBGtmp -> Add(fsigtmp, -1);
-       histBGtmp -> SetLineColor(kRed);
-       histBGtmp -> SetMarkerColor(kRed);
-       histBGtmp -> SetMarkerStyle(20);
-       histBGtmp -> SetMarkerSize(.7);
-       
-       double as = histSigtmp -> FindBin(1110);
-       double bs = histSigtmp -> FindBin(1120);
-       double ab = histBGtmp -> FindBin(1110);
-       double bb = histBGtmp -> FindBin(1120);
-       sg = histSigtmp -> Integral(as,bs);
-       bg = histBGtmp -> Integral(ab,bb);
-       histSigtmp -> GetXaxis() -> SetRangeUser(1110,1120);
-       histBGtmp -> GetXaxis() -> SetRangeUser(1090,1140);
+//       double as = histSigtmp -> FindBin(1110);
+//       double bs = histSigtmp -> FindBin(1120);
+//       double ab = histBGtmp -> FindBin(1110);
+//       double bb = histBGtmp -> FindBin(1120);
+       sg = fsigtmp -> Integral(fa,fb);
+       bg = fbgtmp -> Integral(fa,fb);
+//     histSigtmp -> GetXaxis() -> SetRangeUser(1110,1120);
+//     histBGtmp -> GetXaxis() -> SetRangeUser(1090,1140);
        
        htmp -> Draw();
-       histBGtmp -> Draw("same p");
-       histSigtmp -> Draw("same");
+       ftmp -> Draw("same");
+       fbgtmp -> Draw("same");
+       fsigtmp -> Draw("same");
        
        mtdVal[i] = mtdLi;
        sgnVal[i] = sg/sqrt(sg+bg);
+
+       cMtdScanSigma -> cd(i+1);
+       hmtdLscanSigma[i] -> Draw();
    }
 
    //MTD L_dLV scan
@@ -897,34 +928,31 @@ void sigmaAna(){
        
 	   cout << "--mtdL" << i << "dvert" << j << "--" << endl;
 
-	   double a = 1100;
-	   double b = 1160;
-//	   TF1 * ftmp = new TF1("ftmp", "[0]*([1]*TMath::Gaus(x,[2],[3])+(1.-[1])*TMath::Gaus(x,[2],[4]))+expo(5)+pol6(7)", a, b);
-           TF1 * ftmp = new TF1("ftmp", "TMath::Voigt(x,[0],[1]) + pol6(2)", a, b);
+	   double a = 1085;
+	   double b = 1150;
+	   double fa = 1105;
+	   double fb = 1125;
+	   TF1 * ftmp = new TF1("ftmp", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol7(4)", a, b);
 	   
 	   if(i == 0 && j == 0){
 	   ftmp -> SetParameters(
-//	       5.42236e+03,1.88364e+08,1.11484e+03,-2.66371e+00,-2.66371e+00,
-//	       7.96269e+01,-6.56588e-02,
-	       5,5,
-	       1.43271e+05,-1.05146e+02,-1.05905e-01,7.52765e-05
+	       1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
+	       -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
 	       );
 	   }else{
 	       ftmp -> SetParameters(partmp);
 	   }
 	   
-	   TF1 * fbgtmp = new TF1("fbgtmp", "pol6(0)", a, b);
-	   TF1 * fsigtmp = new TF1("fsigtmp", "TMath::Voigt(x,[0],[1])", a, b);
-
+	   TF1 * fbgtmp = new TF1("fbgtmp", "pol7(0)", a, b);
+	   TF1 * fsigtmp = new TF1("fsigtmp", "[0]*TMath::Voigt(x+[1],[2],[3])", a, b);
 	   
 	   htmp -> Fit("ftmp", "0", "", a, b);
 	   htmp -> Fit("ftmp", "0", "", a, b);
 
-	   partmp[15] = 0;
+	   partmp[] = 0;
 	   ftmp -> GetParameters(partmp);
 	   fsigtmp -> SetParameters(partmp);
-	   //         fbgtmp -> SetParameters(&partmp[6]);
-	   fbgtmp -> SetParameters(&partmp[5]);
+	   fbgtmp -> SetParameters(&partmp[4]);
 
 	   TH1F *histSigtmp = (TH1F*)htmp -> Clone("histSigtmp");
 	   TH1F *histBGtmp = (TH1F*)htmp -> Clone("histBGtmp");
@@ -938,14 +966,14 @@ void sigmaAna(){
 
 	   ftmp -> SetLineColor(kBlack);
 	   fsigtmp -> SetLineColor(kGreen);
-	   
+	   fbgtmp -> SetLineColor(kRed);
 	   
 	   double as = histSigtmp -> FindBin(1110);
 	   double bs = histSigtmp -> FindBin(1120);
 	   double ab = histBGtmp -> FindBin(1110);
 	   double bb = histBGtmp -> FindBin(1120);
-	   sg4 = histSigtmp -> Integral(as,bs);
-	   bg4 = histBGtmp -> Integral(ab,bb);
+	   sg4 = fsigtmp -> Integral(as,bs);
+	   bg4 = fbgtmp -> Integral(ab,bb);
 	   histSigtmp -> GetXaxis() -> SetRangeUser(1110,1120);
 	   histBGtmp -> GetXaxis() -> SetRangeUser(1090,1140);
 
@@ -967,12 +995,15 @@ void sigmaAna(){
 	   cout << ">>>>>>>>>>" << sgnVal4[i][j] << "<<<<<<<<<<<<<<" << endl;
 	   gdVertmtdL -> SetPoint(n, dverti_mtdL, mtdLi_dvert, sgnVal4[i][j]);
 	   n++;
+
+	   cmtdLdvertSigma[i] -> cd(j+1);
+	   hdvertmtdLscanSigma[i][j] -> Draw();
        }
    }
 //<<<<<end scans
    //MTD S scan
+   double partmp[12];
    for(int i = 0; i < 15; i++){
-//       hmtdLpiscan[i] -> Rebin();
        mtdLpii = (i+1)*2;
        //calc Sgn for each mtdLpi value
        cMtdLpiScan -> cd(i+1);
@@ -999,7 +1030,7 @@ void sigmaAna(){
        htmp -> SetName(namePeaktmp);
        TF1 * fsigtmp = new TF1("fsigtmp", "gaus(0)+gaus(3)", 1370, 1405);
        TF1 * fbgtmp = new TF1("fbgtmp", "pol2(0)", 1370, 1405);
-       double partmp[12];
+       partmp[] = 0;
        ftmp -> GetParameters(partmp);
        fsigtmp -> SetParameters(partmp);
        fbgtmp -> SetParameters(&partmp[6]);
@@ -1041,21 +1072,22 @@ void sigmaAna(){
    gdVertscan -> GetYaxis() -> SetTitle("#alpha = S/sqrt{S+B}");
 
 //   gdLVmtdL -> GetXaxis() -> SetTitle("LVert-PrimVert dist [mm]");
-//   gdLVmtdL -> GetYaxis() -> SetTitle("MTD_{p#pi^{-}} [mm]");
-//   gdLVmtdL -> GetZaxis() -> SetTitle("#alpha = S/sqrt{S+B}");
    gdVertmtdL -> GetXaxis() -> SetTitle("dVert [mm]");
    gdVertmtdL -> GetYaxis() -> SetTitle("MTD_{p#pi^{-}} [mm]");
    gdVertmtdL -> GetZaxis() -> SetTitle("#alpha = S/sqrt{S+B}");
- //<<<<<
+
    TGraph *gmtdLpiscan = new TGraph(15, mtdLpiVal, sgnVal5);
    gmtdLpiscan -> GetXaxis() -> SetTitle("MTD_{#Lambda#pi^{+}} [mm]");
    gmtdLpiscan -> GetYaxis() -> SetTitle("#alpha = S/sqrt{S+B}");
-   
+ //<<<<<
+ 
    
    //BG subtruction
    //L no cuts
-   double fita = 1090;
-   double fitb = 1140;
+   double fita = 1085;
+   double fitb = 1150;
+   double fa = 1105;
+   double fb = 1125;
    
    TH1F *histLnc0 = (TH1F*)hLm0 -> Clone("histLnc0");
    const char *hnameLnc0 = histLnc0 -> GetName();
@@ -1063,27 +1095,22 @@ void sigmaAna(){
    sprintf(namePeakLnc0, "%s_peak", hnameLnc0);
 
    cout << ">>>>>>>>fit BG no cuts<<<<<<<<<" << endl;
-   TF1 * fhistLnc0 = new TF1("fhistLnc0", "TMath:Voigt(x,[0],[1]) + pol6(2)", fita, fitb);
-   fhistLnc0 -> SetParameters(
-//       1.94353e+04,1.11490e+03,1.85522e+00,
-//       6.12660e+03,1.11415e+03,5.99114e+00,
-       3,10,
-       -2.00421e+07,3.61488e+04,-1.61962e+01,-2.49007e-04,-6.06240e-08
+   TF1 * fhistLnc0 = new TF1("fhistLnc0", "[0]*TMath:Voigt(x+[1],[2],[3]) + pol7(4)", fita, fitb);
+   TF1 * fsigLnc0 = new TF1("fsigLnc0", "[0]*TMath:Voigt(x+[1],[2],[3])", fita, fitb);
+   TF1 * fbgLnc0 = new TF1("fbgLnc0", "pol7(0)", fita, fitb);
+
+   fhistLnc0 -> SetParameters(//change to params from appr. fit!!!!!!!!!!
+       1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
+       -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
        );
-/*   fhistLnc0 -> SetParLimits(0, 0, 100000);
-   fhistLnc0 -> SetParLimits(1, 1110, 1120);
-   fhistLnc0 -> SetParLimits(2, 0, 10);
-   fhistLnc0 -> SetParLimits(3, 0, 100000);
-   fhistLnc0 -> SetParLimits(4, 1080, 1120);
-   fhistLnc0 -> SetParLimits(5, 0, 10);
-*/ histLnc0 -> Fit("fhistLnc0", "0", "", 1100, 1140);
-   histLnc0 -> Fit("fhistLnc0", "0", "", 1100, 1140);
-   TF1 * fsigLnc0 = new TF1("fsigLnc0", "TMath:Voigt(x,[0],[1])", fita, fitb);
-   TF1 * fbgLnc0 = new TF1("fbgLnc0", "pol6(0)", fita, fitb);
+
+   histLnc0 -> Fit("fhistLnc0", "0", "", fita, fitb);
+   histLnc0 -> Fit("fhistLnc0", "0", "", fita, fitb);
    double parLnc0[12];
    fhistLnc0 -> GetParameters(parLnc0);
    fsigLnc0 -> SetParameters(parLnc0);
-   fbgLnc0 -> SetParameters(&parLnc0[6]);
+   fbgLnc0 -> SetParameters(&parLnc0[4]);
+
    TH1F *histSigLnc0 = (TH1F*)histLnc0 -> Clone("histSigLnc0");
    TH1F *histBGLnc0 = (TH1F*)histLnc0 -> Clone("histBGLnc0");
    histSigLnc0 -> Add(fbgLnc0, -1);
@@ -1094,15 +1121,14 @@ void sigmaAna(){
    histBGLnc0 -> SetMarkerStyle(20);
    histBGLnc0 -> SetMarkerSize(.7);
 
-   fsigLnc0->SetLineColor(kBlack);
-   fbgLnc0->SetLineColor(kBlue);
-   
+   fsigLnc0 -> SetLineColor(kBlack);
+   fbgLnc0 -> SetLineColor(kBlue);
+          
+   double cntLmSigLnc0 = fsigLnc0 -> Integral(fa,fb);
+   double cntLmBGLnc0 = fbgLnc0 -> Integral(fa,fb);
+
    double a = histSigLnc0 -> FindBin(1110);
    double b = histSigLnc0 -> FindBin(1120);
-   double anL = 1110;
-   double bnL = 1120;
-   double cntLmSigLnc0 = fsigLnc0 -> Integral(anL,bnL);
-   double cntLmBGLnc0 = fbgLnc0 -> Integral(anL,bnL);
    histSigLnc0 -> GetXaxis() -> SetRangeUser(1110,1120);
    histBGLnc0 -> GetXaxis() -> SetRangeUser(1090,1140);
 
@@ -1113,28 +1139,21 @@ void sigmaAna(){
    sprintf(namePeakLnc, "%s_peak", hnameLnc);
 
    cout << ">>>>>>>>fit BG no cuts<<<<<<<<<" << endl;
-   TF1 * fhistLnc = new TF1("fhistLnc", "TMath::Voigt(x,[0],[1])+pol6(6)", fita, fitb);
+   TF1 * fhistLnc = new TF1("fhistLnc", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol7(4)", fita, fitb);
    fhistLnc -> SetParameters(
-//       1.94353e+04,1.11490e+03,1.85522e+00,
-//       6.12660e+03,1.11415e+03,5.99114e+00,
-       3,10,
-       -2.00421e+07,3.61488e+04,-1.61962e+01,-2.49007e-04,-6.06240e-08
+       1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
+       -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
        );
-/*   fhistLnc -> SetParLimits(0, 0, 100000);
-   fhistLnc -> SetParLimits(1, 1110, 1120);
-   fhistLnc -> SetParLimits(2, 0, 10);
-   fhistLnc -> SetParLimits(3, 0, 100000);
-   fhistLnc -> SetParLimits(4, 1080, 1120);
-   fhistLnc -> SetParLimits(5, 0, 10);
-*/ histLnc -> Fit("fhistLnc", "0", "", 1100, 1140);
-   histLnc -> Fit("fhistLnc", "0", "", 1100, 1140);
+
+   histLnc -> Fit("fhistLnc", "0", "", fita, fitb);
+   histLnc -> Fit("fhistLnc", "0", "", fita, fitb);
    histLnc -> SetName(namePeakLnc);
-   TF1 * fsigLnc = new TF1("fsigLnc", "TMath::Voigt(x,[0],[1])", fita, fitb);
-   TF1 * fbgLnc = new TF1("fbgLnc", "pol6(0)", fita, fitb);
+   TF1 * fsigLnc = new TF1("fsigLnc", "[0]*TMath::Voigt(x+[1],[2],[3])", fita, fitb);
+   TF1 * fbgLnc = new TF1("fbgLnc", "pol7(0)", fita, fitb);
    double parLnc[12];
    fhistLnc -> GetParameters(parLnc);
    fsigLnc -> SetParameters(parLnc);
-   fbgLnc -> SetParameters(&parLnc[6]);
+   fbgLnc -> SetParameters(&parLnc[4]);
 
    TH1F *histSigLnc = (TH1F*)histLnc -> Clone("histSigLnc");
    TH1F *histBGLnc = (TH1F*)histLnc -> Clone("histBGLnc");
@@ -1151,10 +1170,11 @@ void sigmaAna(){
    
    double a = histSigLnc -> FindBin(1110);
    double b = histSigLnc -> FindBin(1120);
-   double cntLmSigLnc = fsigLnc -> Integral(anL,bnL);
-   double cntLmBGLnc = fbgLnc -> Integral(anL,bnL);
    histSigLnc -> GetXaxis() -> SetRangeUser(1110,1120);
    histBGLnc -> GetXaxis() -> SetRangeUser(1090,1140);
+
+   double cntLmSigLnc = fsigLnc -> Integral(fa, fb);
+   double cntLmBGLnc = fbgLnc -> Integral(fa, fb);
    /////
 
    //L mtd
@@ -1164,28 +1184,21 @@ void sigmaAna(){
    sprintf(namePeakLmtd, "%s_peak", hnameLmtd);
 
    cout << ">>>>>>>>fit BG MtdL cut<<<<<<<<<" << endl;
-   TF1 * fhistLmtd = new TF1("fhistLmtd", "TMath::Voigt(x,[0],[1])+pol6(6)", fita, fitb);
+   TF1 * fhistLmtd = new TF1("fhistLmtd", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol7(4)", fita, fitb);
    fhistLmtd -> SetParameters(
-//       7.97144e+03,1.11503e+03,1.72359e+00,
-//       1.71779e+03,1.11377e+03,3.67803e+00,
-       3,10,
-       -3.46965e+06,2.17130e+03,2.01357e+00,9.48373e-04,-1.76904e-06
+       1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
+       -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
        );
-/*   fhistLmtd -> SetParLimits(0, 0, 100000);
-   fhistLmtd -> SetParLimits(1, 1110, 1120);
-   fhistLmtd -> SetParLimits(2, 0, 10);
-   fhistLmtd -> SetParLimits(3, 0, 100000);
-   fhistLmtd -> SetParLimits(4, 1080, 1120);
-   fhistLmtd -> SetParLimits(5, 0, 10);
-*/ histLmtd -> Fit("fhistLmtd", "0", "", 1100, 1140);
-   histLmtd -> Fit("fhistLmtd", "0", "", 1100, 1140);
+
+   histLmtd -> Fit("fhistLmtd", "0", "", fita, fitb);
+   histLmtd -> Fit("fhistLmtd", "0", "", fita, fitb);
    histLmtd -> SetName(namePeakLmtd);
-   TF1 * fsigLmtd = new TF1("fsigLmtd", "TMath::Voigt(x,[0],[1])", fita, fitb);
-   TF1 * fbgLmtd = new TF1("fbgLmtd", "pol6(0)", fita, fitb);
+   TF1 * fsigLmtd = new TF1("fsigLmtd", "[0]*TMath::Voigt(x+[1],[2],[3])", fita, fitb);
+   TF1 * fbgLmtd = new TF1("fbgLmtd", "pol7(0)", fita, fitb);
    double parLmtd[12];
    fhistLmtd -> GetParameters(parLmtd);
    fsigLmtd -> SetParameters(parLmtd);
-   fbgLmtd -> SetParameters(&parLmtd[6]);
+   fbgLmtd -> SetParameters(&parLmtd[4]);
 
    TH1F *histSigLmtd = (TH1F*)histLmtd -> Clone("histSigLmtd");
    TH1F *histBGLmtd = (TH1F*)histLmtd -> Clone("histBGLmtd");
@@ -1202,10 +1215,11 @@ void sigmaAna(){
 
    double a = histSigLmtd -> FindBin(1110);
    double b = histSigLmtd -> FindBin(1120);
-   double cntLmSigLmtd = fsigLmtd -> Integral(anL,bnL);
-   double cntLmBGLmtd = fbgLmtd -> Integral(anL,bnL);
    histSigLmtd -> GetXaxis() -> SetRangeUser(1110,1120);
    histBGLmtd -> GetXaxis() -> SetRangeUser(1090,1140);
+
+   double cntLmSigLmtd = fsigLmtd -> Integral(fa, fb);
+   double cntLmBGLmtd = fbgLmtd -> Integral(fa, fb);
    /////
 
    //L mtd dLV
@@ -1256,82 +1270,29 @@ void sigmaAna(){
    double cntLmBGLmtdDlv = fbgLmtdDlv -> Integral(anL,bnL);
    histSigLmtdDlv -> GetXaxis() -> SetRangeUser(1110,1120);
    histBGLmtdDlv -> GetXaxis() -> SetRangeUser(1090,1140);
-   ///
-   //L dLV cut
-   TH1F *histLDlv = (TH1F*)hLm_dLV -> Clone("histLDlv");
-   const char *hnameLDlv = histLDlv -> GetName();
-   char namePeakLDlv[50];
-   sprintf(namePeakLDlv, "%s_peak", hnameLDlv);
-
-   cout << ">>>>>>>>fit BG dLV cuts<<<<<<<<<" << endl;
-   TF1 * fhistLDlv = new TF1("fhistLDlv", "gaus(0)+gaus(3)+pol6(6)", fita, fitb);
-   fhistLDlv -> SetParameters(
-       3.22861e+03,1.11505e+03,2.26541e+00,
-       4.49200e+02,1.10917e+03,1.79182e+00,
-       -5.84585e+05,8.67222e+02,5.07379e-01,-9.69784e-04,-6.22429e-08
-       );
-   fhistLDlv -> SetParLimits(0, 0, 100000);
-   fhistLDlv -> SetParLimits(1, 1110, 1120);
-   fhistLDlv -> SetParLimits(2, 0, 10);
-   fhistLDlv -> SetParLimits(3, 0, 100000);
-   fhistLDlv -> SetParLimits(4, 1080, 1120);
-   fhistLDlv -> SetParLimits(5, 0, 10);
-   histLDlv -> Fit("fhistLDlv", "0", "", 1090, 1140);
-   histLDlv -> Fit("fhistLDlv", "0", "", 1090, 1140);
-   histLDlv -> SetName(namePeakLDlv);
-   TF1 * fsigLDlv = new TF1("fsigLDlv", "gaus(0)+gaus(3)", fita, fitb);
-   TF1 * fbgLDlv = new TF1("fbgLDlv", "pol6(0)", fita, fitb);
-   double parLDlv[12];
-   fhistLDlv -> GetParameters(parLDlv);
-   fsigLDlv -> SetParameters(parLDlv);
-   fbgLDlv -> SetParameters(&parLDlv[6]);
-
-   TH1F *histSigLDlv = (TH1F*)histLDlv -> Clone("histSigLDlv");
-   TH1F *histBGLDlv = (TH1F*)histLDlv -> Clone("histBGLDlv");
-   histSigLDlv -> Add(fbgLDlv, -1);
-   histSigLDlv -> SetLineColor(kGreen);
-   histBGLDlv -> Add(fsigLDlv, -1);
-   histBGLDlv -> SetLineColor(kRed);
-   histBGLDlv -> SetMarkerColor(kRed);
-   histBGLDlv -> SetMarkerStyle(20);
-   histBGLDlv -> SetMarkerSize(.7);
-
-   double a = histSigLDlv -> FindBin(1110);
-   double b = histSigLDlv -> FindBin(1120);
-   double cntLmSigLDlv = fsigLDlv -> Integral(anL,bnL);
-   double cntLmBGLDlv = fbgLDlv -> Integral(anL,bnL);
-   histSigLDlv -> GetXaxis() -> SetRangeUser(1110,1120);
-   histBGLDlv -> GetXaxis() -> SetRangeUser(1090,1140);
-   ///
-   */ //L mtd dVert
+*////
+   //L mtd dVert
    TH1F *histLmtdDvert = (TH1F*)hLm_mtdL_dvert -> Clone("histLmtdDvert");
    const char *hnameLmtdDvert = histLmtdDvert -> GetName();
    char namePeakLmtdDvert[50];
    sprintf(namePeakLmtdDvert, "%s_peak", hnameLmtdDvert);
 
    cout << ">>>>>>>>fit BG MtdL dVert cuts<<<<<<<<<" << endl;
-   TF1 * fhistLmtdDvert = new TF1("fhistLmtdDvert", "TMath::Voigt(x,[0],[1])+pol5(6)", fita, fitb);
+   TF1 * fhistLmtdDvert = new TF1("fhistLmtdDvert", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol7(4)", fita, fitb);
    fhistLmtdDvert -> SetParameters(
-//			  3.92029e+03,1.11517e+03,1.64829e+00,
-//			  1.30091e+03,1.11477e+03,4.04957e+00,
-       3,10,
-       -1.04526e+06,9.41713e+02,7.93433e-01,-7.10776e-04
+       1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
+       -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
        );
-/*   fhistLmtdDvert -> SetParLimits(0, 0, 100000);
-   fhistLmtdDvert -> SetParLimits(1, 1110, 1120);
-   fhistLmtdDvert -> SetParLimits(2, 0, 10);
-   fhistLmtdDvert -> SetParLimits(3, 0, 100000);
-   fhistLmtdDvert -> SetParLimits(4, 1080, 1120);
-   fhistLmtdDvert -> SetParLimits(5, 0, 10);
-*/ histLmtdDvert -> Fit("fhistLmtdDvert", "0", "", 1090, 1140);
-   histLmtdDvert -> Fit("fhistLmtdDvert", "0", "", 1090, 1140);
+
+   histLmtdDvert -> Fit("fhistLmtdDvert", "0", "", fita, fitb);
+   histLmtdDvert -> Fit("fhistLmtdDvert", "0", "", fita, fitb);
    histLmtdDvert -> SetName(namePeakLmtdDvert);
-   TF1 * fsigLmtdDvert = new TF1("fsigLmtdDvert", "TMath::Voigt(x,[0],[1])", fita, fitb);
-   TF1 * fbgLmtdDvert = new TF1("fbgLmtdDvert", "pol5(0)", fita, fitb);
+   TF1 * fsigLmtdDvert = new TF1("fsigLmtdDvert", "[0]*TMath::Voigt(x+[1],[2],[3]) ", fita, fitb);
+   TF1 * fbgLmtdDvert = new TF1("fbgLmtdDvert", "pol7(0)", fita, fitb);
    double parLmtdDvert[12];
    fhistLmtdDvert -> GetParameters(parLmtdDvert);
    fsigLmtdDvert -> SetParameters(parLmtdDvert);
-   fbgLmtdDvert -> SetParameters(&parLmtdDvert[6]);
+   fbgLmtdDvert -> SetParameters(&parLmtdDvert[4]);
 
    TH1F *histSigLmtdDvert = (TH1F*)histLmtdDvert -> Clone("histSigLmtdDvert");
    TH1F *histBGLmtdDvert = (TH1F*)histLmtdDvert -> Clone("histBGLmtdDvert");
@@ -1348,44 +1309,50 @@ void sigmaAna(){
 
    double a = histSigLmtdDvert -> FindBin(1110);
    double b = histSigLmtdDvert -> FindBin(1120);
-   double cntLmSigLmtdDvert = fsigLmtdDvert -> Integral(anL,bnL);
-   double cntLmBGLmtdDvert = fbgLmtdDvert -> Integral(anL,bnL);
    histSigLmtdDvert -> GetXaxis() -> SetRangeUser(1110,1120);
    histBGLmtdDvert -> GetXaxis() -> SetRangeUser(1090,1140);
+
+   double cntLmSigLmtdDvert = fsigLmtdDvert -> Integral(fa, fb);
+   double cntLmBGLmtdDvert = fbgLmtdDvert -> Integral(fa, fb);
    ///
 
    //>>>>>>>>>>>>>Sigma<<<<<<<<<<<<<<<<<<<<<<<
    //S no cuts
-   double fitaS = 1340.;
-   double fitbS = 1395.;
+   int fitS1 = 1200;
+   int fitS2 = 1800;
+   int fitSsig1 = 1325;
+   int fitSsig2 = 1445;
    
    TH1F *histSnc = (TH1F*)hSm -> Clone("histSnc");
+   histSnc -> GetXaxis() -> SetTitle("m_{p#pi^{+}#pi^{-}}");
+   histSnc -> GetXaxis() -> SetTitleSize(.05);
+   histSnc -> GetXaxis() -> SetLabelSize(.05);
+   histSnc -> Draw();
+   
    const char *hnameSnc = histSnc -> GetName();
    char namePeakSnc[50];
    sprintf(namePeakSnc, "%s_peak", hnameSnc);
 
    cout << ">>>>>>>>fit BG no cuts<<<<<<<<<" << endl;
-   TF1 * fhistSnc = new TF1("fhistSnc", "gaus(0)+gaus(3)+pol4(6)", 1110, 1140);
+   TF1 * fhistSnc = new TF1("fhistSnc", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) ) + pol6(3)", fitS1, fitS2);
    fhistSnc -> SetParameters(
-       3.92029e+03,1.11517e+03,1.64829e+00,
-       1.30091e+03,1.11477e+03,4.04957e+00,
-       -1.04526e+06,9.41713e+02,7.93433e-01,-7.10776e-04
+       1.40794e+09, 36, 1.38415e+03,
+       -9.08964e+05,2.35372e+03,-2.33096e+00,
+       1.08507e-03,-2.28651e-07,1.57016e-11
        );
-   fhistSnc -> SetParLimits(0, 0, 100000);
-   fhistSnc -> SetParLimits(1, 1110, 1120);
-   fhistSnc -> SetParLimits(2, 0, 10);
-   fhistSnc -> SetParLimits(3, 0, 100000);
-   fhistSnc -> SetParLimits(4, 1080, 1120);
-   fhistSnc -> SetParLimits(5, 0, 10);
-   histSnc -> Fit("fhistSnc", "0", "", 1090, 1140);
-   histSnc -> Fit("fhistSnc", "0", "", 1090, 1140);
+   fhistSnc->SetParLimits(0,0,10000000000);
+   fhistSnc->SetParLimits(1,30,40);
+   fhistSnc->SetParLimits(2,1360,1400);
+   
+   histSnc -> Fit("fhistSnc", "0", "", fitS1, fitS2);
+   histSnc -> Fit("fhistSnc", "0", "", fitS1, fitS2);
    histSnc -> SetName(namePeakSnc);
-   TF1 * fsigSnc = new TF1("fsigSnc", "gaus(0)+gaus(3)", 1105, 1125);
-   TF1 * fbgSnc = new TF1("fbgSnc", "pol4(0)", 1090, 1140);
+   TF1 * fsigSnc = new TF1("fsigSnc", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) )", fitSsig1, fitSsig2);
+   TF1 * fbgSnc = new TF1("fbgSnc", "pol6(0)", fitS1, fitS2);
    double parSnc[12];
    fhistSnc -> GetParameters(parSnc);
    fsigSnc -> SetParameters(parSnc);
-   fbgSnc -> SetParameters(&parSnc[6]);
+   fbgSnc -> SetParameters(&parSnc[3]);
 
    TH1F *histSigSnc = (TH1F*)histSnc -> Clone("histSigSnc");
    TH1F *histBGSnc = (TH1F*)histSnc -> Clone("histBGSnc");
@@ -1397,47 +1364,54 @@ void sigmaAna(){
    histBGSnc -> SetMarkerStyle(20);
    histBGSnc -> SetMarkerSize(.7);
 
-   fsigSnc->SetLineColor(kBlack);
-   fbgSnc->SetLineColor(kBlue);
-
-   double a = histSigSnc -> FindBin(1110);
-   double b = histSigSnc -> FindBin(1120);
-   double anS = 1378;
-   double bnS = 1398;
-   double cntSmSigSnc = histSigSnc -> Integral(anS,bnS);
-   double cntSmBGSnc = histBGSnc -> Integral(anS,bnS);
-   histSigSnc -> GetXaxis() -> SetRangeUser(1110,1120);
-   histBGSnc -> GetXaxis() -> SetRangeUser(1090,1140);
+   fsigSnc -> SetLineColor(kBlack);
+   fsigSnc -> SetMarkerColor(kBlack);
+   fsigSnc -> SetMarkerStyle(20);
+   fsigSnc -> SetMarkerSize(.5);
+   fsigSnc -> Draw("same");
+   fbgSnc -> SetLineColor(kBlue);
+   fbgSnc -> SetLineColor(kBlue);
+   fbgSnc -> SetMarkerColor(kBlue);
+   fbgSnc -> SetMarkerStyle(20);
+   fbgSnc -> SetMarkerSize(.5);
+   fbgSnc -> Draw("same");
+   
+   double cntSmSigSnc =  fsigSnc -> Integral(fitSsig1,fitSsig2);
+   double cntSmBGSnc = fbgSnc -> Integral(fitSsig1,fitSsig2);
    /////
  
    //S mtdL
    TH1F *histSmtdL = (TH1F*)hSm_mtdL -> Clone("histSmtdL");
+   histSmtdL -> GetXaxis() -> SetTitle("m_{p#pi^{+}#pi^{-}}");
+   histSmtdL -> GetXaxis() -> SetTitleSize(.05);
+   histSmtdL -> GetXaxis() -> SetLabelSize(.05);
+   histSmtdL -> Draw();
+
    const char *hnameSmtdL = histSmtdL -> GetName();
    char namePeakSmtdL[50];
    sprintf(namePeakSmtdL, "%s_peak", hnameSmtdL);
 
    cout << ">>>>>>>>fit BG MtdL cut<<<<<<<<<" << endl;
-   TF1 * fhistSmtdL = new TF1("fhistSmtdL", "gaus(0)+gaus(3)+pol2(6)", fitaS, fitbS);
+   TF1 * fhistSmtdL = new TF1("fhistSmtdL", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) ) + pol6(3)", fitS1, fitS2);
    fhistSmtdL -> SetParameters(
-       3.92029e+03,1385,5,
-       1.30091e+03,1385,5,
-       8
+       1.40794e+09, 36, 1.38415e+03,
+       -9.08964e+05,2.35372e+03,-2.33096e+00,
+       1.08507e-03,-2.28651e-07,1.57016e-11
        );
-   fhistSmtdL -> SetParLimits(0, 0, 100000);
-   fhistSmtdL -> SetParLimits(1, 1378, 1398);
-   fhistSmtdL -> SetParLimits(2, 0, 10);
-   fhistSmtdL -> SetParLimits(3, 0, 100000);
-   fhistSmtdL -> SetParLimits(4, 1370, 1405);
-   fhistSmtdL -> SetParLimits(5, 0, 10);
-   histSmtdL -> Fit("fhistSmtdL", "0", "", 1370, 1405);
-   histSmtdL -> Fit("fhistSmtdL", "0", "", 1370, 1405);
+
+   fhistSmtdL -> SetParLimits(0,0,10000000000);
+   fhistSmtdL -> SetParLimits(1,30,40);
+   fhistSmtdL -> SetParLimits(2,1360,1400);
+   
+   histSmtdL -> Fit("fhistSmtdL", "0", "", fitS1, fitS2);
+   histSmtdL -> Fit("fhistSmtdL", "0", "", fitS1, fitS2);
    histSmtdL -> SetName(namePeakSmtdL);
-   TF1 * fsigSmtdL = new TF1("fsigSmtdL", "gaus(0)+gaus(3)", fitaS, fitbS);
-   TF1 * fbgSmtdL = new TF1("fbgSmtdL", "pol4(0)", fitaS, fitbS);
+   TF1 * fsigSmtdL = new TF1("fsigSmtdL", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) )", fitSsig1,fitSsig2);
+   TF1 * fbgSmtdL = new TF1("fbgSmtdL", "pol6(0)", fitS1, fitS2);
    double parSmtdL[12];
    fhistSmtdL -> GetParameters(parSmtdL);
    fsigSmtdL -> SetParameters(parSmtdL);
-   fbgSmtdL -> SetParameters(&parSmtdL[6]);
+   fbgSmtdL -> SetParameters(&parSmtdL[3]);
 
    TH1F *histSigSmtdL = (TH1F*)histSmtdL -> Clone("histSigSmtdL");
    TH1F *histBGSmtdL = (TH1F*)histSmtdL -> Clone("histBGSmtdL");
@@ -1449,236 +1423,52 @@ void sigmaAna(){
    histBGSmtdL -> SetMarkerStyle(20);
    histBGSmtdL -> SetMarkerSize(.7);
 
-   fsigSmtdL->SetLineColor(kBlack);
-   fbgSmtdL->SetLineColor(kBlue);
+   fsigSmtdL -> SetLineColor(kBlack);
+   fsigSmtdL -> SetMarkerColor(kBlack);
+   fsigSmtdL -> SetMarkerStyle(20);
+   fsigSmtdL -> SetMarkerSize(.5);
+   fsigSmtdL -> Draw("same");
+   fbgSmtdL -> SetLineColor(kBlue);
+   fbgSmtdL -> SetMarkerColor(kBlue);
+   fbgSmtdL -> SetMarkerStyle(20);
+   fbgSmtdL -> SetMarkerSize(.5);
+   fbgSmtdL -> Draw("same");
 
-   double a = histSigSmtdL -> FindBin(1378);
-   double b = histSigSmtdL -> FindBin(1398);
-   double cntSmSigSmtdL = histSigSmtdL -> Integral(anS,bnS);
-   double cntSmBGSmtdL = histBGSmtdL -> Integral(anS,bnS);
-   histSigSmtdL -> GetXaxis() -> SetRangeUser(1370,1405);
-   histBGSmtdL -> GetXaxis() -> SetRangeUser(1370,1405);
+   double cntSmSigSmtdL = fsigSmtdL -> Integral(fitSsig1,fitSsig2);
+   double cntSmBGSmtdL = fbgSmtdL -> Integral(fitSsig1,fitSsig2);
    /////
  
-/*   //S mtdL dLV
-   TH1F *histSmtdLDlv = (TH1F*)hSm_mtdL_dLV -> Clone("histSmtdLDlv");
-   const char *hnameSmtdLDlv = histSmtdLDlv -> GetName();
-   char namePeakSmtdLDlv[50];
-   sprintf(namePeakSmtdLDlv, "%s_peak", hnameSmtdLDlv);
- 
-   cout << ">>>>>>>>fit BG MtdL dLV cuts<<<<<<<<<" << endl;
-   TF1 * fhistSmtdLDlv = new TF1("fhistSmtdLDlv", "gaus(0)+gaus(3)+pol4(6)", fitaS, fitbS);
-   fhistSmtdLDlv -> SetParameters(
-			  3.92029e+03,1.11517e+03,1.64829e+00,
-			  1.30091e+03,1.11477e+03,4.04957e+00,
-			  -1.04526e+06,9.41713e+02,7.93433e-01,-7.10776e-04
-   			  );
-   fhistSmtdLDlv -> SetParLimits(0, 0, 100000);
-   fhistSmtdLDlv -> SetParLimits(1, 1110, 1120);
-   fhistSmtdLDlv -> SetParLimits(2, 0, 10);
-   fhistSmtdLDlv -> SetParLimits(3, 0, 100000);
-   fhistSmtdLDlv -> SetParLimits(4, 1080, 1120);
-   fhistSmtdLDlv -> SetParLimits(5, 0, 10);
-   histSmtdLDlv -> Fit("fhistSmtdLDlv", "0", "", 1090, 1140);
-   histSmtdLDlv -> Fit("fhistSmtdLDlv", "0", "", 1090, 1140);
-   histSmtdLDlv -> SetName(namePeakSmtdLDlv);
-   TF1 * fsigSmtdLDlv = new TF1("fsigSmtdLDlv", "gaus(0)+gaus(3)", 1105, 1125);
-   TF1 * fbgSmtdLDlv = new TF1("fbgSmtdLDlv", "pol4(0)", 1090, 1140);
-   double parSmtdLDlv[12];
-   fhistSmtdLDlv -> GetParameters(parSmtdLDlv);
-   fsigSmtdLDlv -> SetParameters(parSmtdLDlv);
-   fbgSmtdLDlv -> SetParameters(&parSmtdLDlv[6]);
-
-   TH1F *histSigSmtdLDlv = (TH1F*)histSmtdLDlv -> Clone("histSigSmtdLDlv");
-   TH1F *histBGSmtdLDlv = (TH1F*)histSmtdLDlv -> Clone("histBGSmtdLDlv");
-   histSigSmtdLDlv -> Add(fbgSmtdLDlv, -1);
-   histSigSmtdLDlv -> SetLineColor(kGreen);
-   histBGSmtdLDlv -> Add(fsigSmtdLDlv, -1);
-   histBGSmtdLDlv -> SetLineColor(kRed);
-   histBGSmtdLDlv -> SetMarkerColor(kRed);
-   histBGSmtdLDlv -> SetMarkerStyle(20);
-   histBGSmtdLDlv -> SetMarkerSize(.7);
-
-   fsigSmtdLDlv->SetLineColor(kBlack);
-   fbgSmtdLDlv->SetLineColor(kBlue);
-
-   double a = histSigSmtdLDlv -> FindBin(1110);
-   double b = histSigSmtdLDlv -> FindBin(1120);
-   double cntSmSigSmtdLDlv = histSigSmtdLDlv -> Integral(anS,bnS);
-   double cntSmBGSmtdLDlv = histBGSmtdLDlv -> Integral(anS,bnS);
-   histSigSmtdLDlv -> GetXaxis() -> SetRangeUser(1110,1120);
-   histBGSmtdLDlv -> GetXaxis() -> SetRangeUser(1090,1140);
-   ///
-
-   //S mtdL dLV Lm
-   TH1F *histSmtdLDlvLm = (TH1F*)hSm_mtdL_dLV_Lm -> Clone("histSmtdLDlvLm");
-   const char *hnameSmtdLDlvLm = histSmtdLDlvLm -> GetName();
-   char namePeakSmtdLDlvLm[50];
-   sprintf(namePeakSmtdLDlvLm, "%s_peak", hnameSmtdLDlvLm);
-
-   cout << ">>>>>>>>fit BG MtdL dLV Lm cuts<<<<<<<<<" << endl;
-   TF1 * fhistSmtdLDlvLm = new TF1("fhistSmtdLDlvLm", "gaus(0)+gaus(3)+pol3(6)", fitaS, fitbS);
-   fhistSmtdLDlvLm -> SetParameters(
-       9.97029e+04,1.37800e+03,1.84764e-01,
-       8.37420e+01,1.38182e+03,5.71984e+00,
-       1.04313e+02,-5.10370e-01,5.41819e-04
-       );
-   fhistSmtdLDlvLm -> SetParLimits(0, 0, 100000);
-   fhistSmtdLDlvLm -> SetParLimits(1, 1378, 1392);
-   fhistSmtdLDlvLm -> SetParLimits(2, 0, 10);
-   fhistSmtdLDlvLm -> SetParLimits(3, 0, 100000);
-   fhistSmtdLDlvLm -> SetParLimits(4, 1378, 1392);
-   fhistSmtdLDlvLm -> SetParLimits(5, 0, 10);
-   histSmtdLDlvLm -> Fit("fhistSmtdLDlvLm", "0", "", 1370, 1395);
-   histSmtdLDlvLm -> Fit("fhistSmtdLDlvLm", "0", "", 1370, 1395);
-   histSmtdLDlvLm -> SetName(namePeakSmtdLDlvLm);
-   TF1 * fsigSmtdLDlvLm = new TF1("fsigSmtdLDlvLm", "gaus(0)+gaus(3)", 1330, 1430);
-   TF1 * fbgSmtdLDlvLm = new TF1("fbgSmtdLDlvLm", "pol3(0)", 1335, 1405);
-   double parSmtdLDlvLm[12];
-   fhistSmtdLDlvLm -> GetParameters(parSmtdLDlvLm);
-   fsigSmtdLDlvLm -> SetParameters(parSmtdLDlvLm);
-   fbgSmtdLDlvLm -> SetParameters(&parSmtdLDlvLm[6]);
-
-   TH1F *histSigSmtdLDlvLm = (TH1F*)histSmtdLDlvLm -> Clone("histSigSmtdLDlvLm");
-   TH1F *histBGSmtdLDlvLm = (TH1F*)histSmtdLDlvLm -> Clone("histBGSmtdLDlvLm");
-   histSigSmtdLDlvLm -> Add(fbgSmtdLDlvLm, -1);
-   histSigSmtdLDlvLm -> SetLineColor(kGreen);
-   histBGSmtdLDlvLm -> Add(fsigSmtdLDlvLm, -1);
-   histBGSmtdLDlvLm -> SetLineColor(kRed);
-   histBGSmtdLDlvLm -> SetMarkerColor(kRed);
-   histBGSmtdLDlvLm -> SetMarkerStyle(20);
-   histBGSmtdLDlvLm -> SetMarkerSize(.7);
-
-   double a = histSigSmtdLDlvLm -> FindBin(1378);
-   double b = histSigSmtdLDlvLm -> FindBin(1398);
-   double cntSmSigSmtdLDlvLm = fsigSmtdLDlvLm -> Integral(anS,bnS);
-   double cntSmBGSmtdLDlvLm = fbgSmtdLDlvLm -> Integral(anS,bnS);
-   histSigSmtdLDlvLm -> GetXaxis() -> SetRangeUser(1370,1405);
-   histBGSmtdLDlvLm -> GetXaxis() -> SetRangeUser(1370,1405);
-
-   //BW+pol7 fit
-   TCanvas *cSigmaFit = new TCanvas("cSigmaFit", "cSigmaFit");
-   cSigmaFit -> Divide(3,2);
-   cSigmaFit -> cd(1);
-   nice_canv1(gPad);
-   hLm0 -> GetXaxis() -> SetTitleSize(.05);
-   hLm0 -> GetXaxis() -> SetLabelSize(.05);
-   hLm0 -> Draw();
-   cSigmaFit -> cd(4);
-   nice_canv1(gPad);
-   hLm0 -> GetXaxis() -> SetTitleSize(.05);
-   hLm0 -> GetXaxis() -> SetLabelSize(.05);
-   hSm0 -> Draw();
-   cSigmaFit -> cd(2);
-   nice_canv1(gPad);
-   hLm -> GetXaxis() -> SetTitleSize(.05);
-   hLm -> GetXaxis() -> SetLabelSize(.05);
-   hLm -> Draw();
-   cSigmaFit -> cd(5);
-   nice_canv1(gPad);
-   hSm -> GetXaxis() -> SetTitleSize(.05);
-   hSm -> GetXaxis() -> SetLabelSize(.05);
-   hSm -> Draw();
-   cSigmaFit -> cd(3);
-   nice_canv1(gPad);
-   hLm_mtdL_dLV -> GetXaxis() -> SetTitleSize(.05);
-   hLm_mtdL_dLV -> GetXaxis() -> SetLabelSize(.05);
-   hLm_mtdL_dLV -> Draw();
-   cSigmaFit -> cd(6);
-   TH1F *histSmtdLDlvLmCl = (TH1F*)hSm_mtdL_dLV_Lm -> Clone("histSmtdLDlvLm");
-   histSmtdLDlvLmCl -> GetXaxis() -> SetTitle("m_{p#pi^{+}#pi^{-}}");
-   histSmtdLDlvLmCl -> GetXaxis() -> SetTitleSize(.05);
-   histSmtdLDlvLmCl -> GetXaxis() -> SetLabelSize(.05);
-   histSmtdLDlvLmCl->Draw();
-
-   int fitS1 = 1200;
-   int fitS2 = 1800;
-   int fitSsig1 = 1325;
-   int fitSsig2 = 1445;
-
-   TF1 *func = new TF1("func", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) ) + pol6(3)", fitS1, fitS2);
-   func -> SetParameters(1.40794e+09, 36, 1.38415e+03,
-			 -9.08964e+05,2.35372e+03,-2.33096e+00,
-			 1.08507e-03,-2.28651e-07,1.57016e-11
-//7.05408e+08, 4.85365e+01, 1.38326e+03,
-			 //-7.73781e+04, 9.95020e+01, 2.58496e-03, -2.64161e-05,
-			 //-1.04672e-08, 4.64373e-12, 5.82781e-15, -2.15897e-18
-       );
-   func->SetParLimits(0,0,10000000000);
-   func->SetParLimits(1,30,40);
-   func->SetParLimits(2,1360,1400);
-      
-   histSmtdLDlvLmCl -> Fit("func", "", "", fitS1, fitS2);
-   histSmtdLDlvLmCl -> Fit("func", "", "", fitS1, fitS2);
-   //BW
-   TF1 *sig = new TF1("mybw", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) )", fitSsig1, fitSsig2);
-   //Gaus
-   //   TF1* sig = new TF1("f_sig", "gaus", 1200, 1500);
-
-   TF1* bkg = new TF1("f_bkg", "pol6(0)", fitS1, fitS2);
-   double par[11];
-   func -> GetParameters(par);
-   sig -> SetParameters(par);
-   bkg -> SetParameters(&par[3]);
-
-   float cntsig = sig->Integral(fitSsig1,fitSsig2);
-      
-   sig -> SetLineColor(kBlack);
-   sig -> SetMarkerColor(kBlack);
-   sig -> SetMarkerStyle(20);
-   sig -> SetMarkerSize(.5);
-   sig -> Draw("same");
-   bkg->SetLineColor(kBlue);
-   bkg->SetMarkerColor(kBlue);
-   bkg -> SetMarkerStyle(20);
-   bkg -> SetMarkerSize(.5);
-   bkg->Draw("same");
-   //end gaus+pol7 fit
-
-   char textbw[64], gam[64], mSig[64], nSig[64];
-   sprintf(textbw, "Breit-Wigner:\n");
-   sprintf(gam, "#Gamma = %.2f MeV", par[1]);
-   sprintf(mSig, "M = %.2f", par[2]);
-   sprintf(nSig, "N = %.0f", cntsig);
-   TPaveText *ptBW = new TPaveText(.75, .4, .8, .6, "NDC");
-   ptBW -> SetFillColor(0);
-   ptBW -> SetBorderSize(0);
-   ptBW -> SetTextSize(0.04);
-   ptBW -> AddText(textbw);
-   ptBW -> AddText(gam);
-   ptBW -> AddText(mSig);
-   ptBW -> AddText(nSig);
-
-   ptBW -> Draw("same");
-*/ ///
   //S mtdL dVert
    TH1F *histSmtdLDvert = (TH1F*)hSm_mtdL_dvert -> Clone("histSmtdLDvert");
+   histSmtdLDvert -> GetXaxis() -> SetTitle("m_{p#pi^{+}#pi^{-}}");
+   histSmtdLDvert -> GetXaxis() -> SetTitleSize(.05);
+   histSmtdLDvert -> GetXaxis() -> SetLabelSize(.05);
+   histSmtdLDvert -> Draw();
+
    const char *hnameSmtdLDvert = histSmtdLDvert -> GetName();
    char namePeakSmtdLDvert[50];
    sprintf(namePeakSmtdLDvert, "%s_peak", hnameSmtdLDvert);
  
    cout << ">>>>>>>>fit BG MtdL dVert cuts<<<<<<<<<" << endl;
-   TF1 * fhistSmtdLDvert = new TF1("fhistSmtdLDvert", "gaus(0)+gaus(3)+pol4(6)", fitaS, fitbS);
+   TF1 * fhistSmtdLDvert = new TF1("fhistSmtdLDvert", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) ) + pol6(3)", fitS1, fitS2);
    fhistSmtdLDvert -> SetParameters(
-			  3.92029e+03,1.11517e+03,1.64829e+00,
-			  1.30091e+03,1.11477e+03,4.04957e+00,
-			  -1.04526e+06,9.41713e+02,7.93433e-01,-7.10776e-04
-   			  );
-   fhistSmtdLDvert -> SetParLimits(0, 0, 100000);
-   fhistSmtdLDvert -> SetParLimits(1, 1110, 1120);
-   fhistSmtdLDvert -> SetParLimits(2, 0, 10);
-   fhistSmtdLDvert -> SetParLimits(3, 0, 100000);
-   fhistSmtdLDvert -> SetParLimits(4, 1080, 1120);
-   fhistSmtdLDvert -> SetParLimits(5, 0, 10);
-   histSmtdLDvert -> Fit("fhistSmtdLDvert", "0", "", 1090, 1140);
-   histSmtdLDvert -> Fit("fhistSmtdLDvert", "0", "", 1090, 1140);
+       1.40794e+09, 36, 1.38415e+03,
+       -9.08964e+05,2.35372e+03,-2.33096e+00,
+       1.08507e-03,-2.28651e-07,1.57016e-11
+       );
+   fhistSmtdLDvert -> SetParLimits(0,0,10000000000);
+   fhistSmtdLDvert -> SetParLimits(1,30,40);
+   fhistSmtdLDvert -> SetParLimits(2,1360,1400);
+   
+   histSmtdLDvert -> Fit("fhistSmtdLDvert", "0", "", fitS1, fitS2);
+   histSmtdLDvert -> Fit("fhistSmtdLDvert", "0", "", fitS1, fitS2);
    histSmtdLDvert -> SetName(namePeakSmtdLDvert);
-   TF1 * fsigSmtdLDvert = new TF1("fsigSmtdLDvert", "gaus(0)+gaus(3)", 1105, 1125);
-   TF1 * fbgSmtdLDvert = new TF1("fbgSmtdLDvert", "pol4(0)", 1090, 1140);
+   TF1 * fsigSmtdLDvert = new TF1("fsigSmtdLDvert", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) )", fitSsig1,fitSsig2);
+   TF1 * fbgSmtdLDvert = new TF1("fbgSmtdLDvert", "pol6(0)", fitS1, fitS2);
    double parSmtdLDvert[12];
    fhistSmtdLDvert -> GetParameters(parSmtdLDvert);
    fsigSmtdLDvert -> SetParameters(parSmtdLDvert);
-   fbgSmtdLDvert -> SetParameters(&parSmtdLDvert[6]);
+   fbgSmtdLDvert -> SetParameters(&parSmtdLDvert[3]);
 
    TH1F *histSigSmtdLDvert = (TH1F*)histSmtdLDvert -> Clone("histSigSmtdLDvert");
    TH1F *histBGSmtdLDvert = (TH1F*)histSmtdLDvert -> Clone("histBGSmtdLDvert");
@@ -1690,63 +1480,22 @@ void sigmaAna(){
    histBGSmtdLDvert -> SetMarkerStyle(20);
    histBGSmtdLDvert -> SetMarkerSize(.7);
 
-   fsigSmtdLDvert->SetLineColor(kBlack);
-   fbgSmtdLDvert->SetLineColor(kBlue);
-
-   double a = histSigSmtdLDvert -> FindBin(1110);
-   double b = histSigSmtdLDvert -> FindBin(1120);
-   double cntSmSigSmtdLDvert = histSigSmtdLDvert -> Integral(anS,bnS);
-   double cntSmBGSmtdLDvert = histBGSmtdLDvert -> Integral(anS,bnS);
-   histSigSmtdLDvert -> GetXaxis() -> SetRangeUser(1110,1120);
-   histBGSmtdLDvert -> GetXaxis() -> SetRangeUser(1090,1140);
+   fsigSmtdLDvert -> SetLineColor(kBlack);
+   fsigSmtdLDvert -> SetMarkerColor(kBlack);
+   fsigSmtdLDvert -> SetMarkerStyle(20);
+   fsigSmtdLDvert -> SetMarkerSize(.5);
+   fsigSmtdLDvert -> Draw("same");
+   fbgSmtdLDvert -> SetLineColor(kBlue);
+   fbgSmtdLDvert -> SetMarkerColor(kBlue);
+   fbgSmtdLDvert -> SetMarkerStyle(20);
+   fbgSmtdLDvert -> SetMarkerSize(.5);
+   fbgSmtdLDvert -> Draw("same");
+          
+   double cntSmSigSmtdLDvert = fsigSmtdLDvert -> Integral(fitSsig1,fitSsig2);
+   double cntSmBGSmtdLDvert = fbgSmtdLDvert -> Integral(fitSsig1,fitSsig2);
    ///
 
    //S mtdL dVert Lm
-   TH1F *histSmtdLDvertLm = (TH1F*)hSm_mtdL_dvert_Lm -> Clone("histSmtdLDvertLm");
-   const char *hnameSmtdLDvertLm = histSmtdLDvertLm -> GetName();
-   char namePeakSmtdLDvertLm[50];
-   sprintf(namePeakSmtdLDvertLm, "%s_peak", hnameSmtdLDvertLm);
-
-   cout << ">>>>>>>>fit BG MtdL dVert Lm cuts<<<<<<<<<" << endl;
-   TF1 * fhistSmtdLDvertLm = new TF1("fhistSmtdLDvertLm", "gaus(0)+gaus(3)+pol3(6)", fitaS, fitbS);
-   fhistSmtdLDvertLm -> SetParameters(
-       9.97029e+04,1.37800e+03,1.84764e-01,
-       8.37420e+01,1.38182e+03,5.71984e+00,
-       1.04313e+02,-5.10370e-01,5.41819e-04
-       );
-   fhistSmtdLDvertLm -> SetParLimits(0, 0, 100000);
-   fhistSmtdLDvertLm -> SetParLimits(1, 1378, 1392);
-   fhistSmtdLDvertLm -> SetParLimits(2, 0, 10);
-   fhistSmtdLDvertLm -> SetParLimits(3, 0, 100000);
-   fhistSmtdLDvertLm -> SetParLimits(4, 1378, 1392);
-   fhistSmtdLDvertLm -> SetParLimits(5, 0, 10);
-   histSmtdLDvertLm -> Fit("fhistSmtdLDvertLm", "0", "", 1370, 1395);
-   histSmtdLDvertLm -> Fit("fhistSmtdLDvertLm", "0", "", 1370, 1395);
-   histSmtdLDvertLm -> SetName(namePeakSmtdLDvertLm);
-   TF1 * fsigSmtdLDvertLm = new TF1("fsigSmtdLDvertLm", "gaus(0)+gaus(3)", 1330, 1430);
-   TF1 * fbgSmtdLDvertLm = new TF1("fbgSmtdLDvertLm", "pol3(0)", 1335, 1405);
-   double parSmtdLDvertLm[12];
-   fhistSmtdLDvertLm -> GetParameters(parSmtdLDvertLm);
-   fsigSmtdLDvertLm -> SetParameters(parSmtdLDvertLm);
-   fbgSmtdLDvertLm -> SetParameters(&parSmtdLDvertLm[6]);
-
-   TH1F *histSigSmtdLDvertLm = (TH1F*)histSmtdLDvertLm -> Clone("histSigSmtdLDvertLm");
-   TH1F *histBGSmtdLDvertLm = (TH1F*)histSmtdLDvertLm -> Clone("histBGSmtdLDvertLm");
-   histSigSmtdLDvertLm -> Add(fbgSmtdLDvertLm, -1);
-   histSigSmtdLDvertLm -> SetLineColor(kGreen);
-   histBGSmtdLDvertLm -> Add(fsigSmtdLDvertLm, -1);
-   histBGSmtdLDvertLm -> SetLineColor(kRed);
-   histBGSmtdLDvertLm -> SetMarkerColor(kRed);
-   histBGSmtdLDvertLm -> SetMarkerStyle(20);
-   histBGSmtdLDvertLm -> SetMarkerSize(.7);
-
-   double a = histSigSmtdLDvertLm -> FindBin(1378);
-   double b = histSigSmtdLDvertLm -> FindBin(1398);
-   double cntSmSigSmtdLDvertLm = fsigSmtdLDvertLm -> Integral(anS,bnS);
-   double cntSmBGSmtdLDvertLm = fbgSmtdLDvertLm -> Integral(anS,bnS);
-   histSigSmtdLDvertLm -> GetXaxis() -> SetRangeUser(1370,1405);
-   histBGSmtdLDvertLm -> GetXaxis() -> SetRangeUser(1370,1405);
-
    //BW+pol7 fit
    TCanvas *cSigmaFit = new TCanvas("cSigmaFit", "cSigmaFit");
    cSigmaFit -> Divide(3,2);
@@ -1776,61 +1525,69 @@ void sigmaAna(){
    hLm_mtdL_dLV -> GetXaxis() -> SetLabelSize(.05);
    hLm_mtdL_dLV -> Draw();
    cSigmaFit -> cd(6);
-   TH1F *histSmtdLDvertLmCl = (TH1F*)hSm_mtdL_dvert_Lm -> Clone("histSmtdLDvertLm");
-   histSmtdLDvertLmCl -> GetXaxis() -> SetTitle("m_{p#pi^{+}#pi^{-}}");
-   histSmtdLDvertLmCl -> GetXaxis() -> SetTitleSize(.05);
-   histSmtdLDvertLmCl -> GetXaxis() -> SetLabelSize(.05);
-   histSmtdLDvertLmCl->Draw();
 
-   int fitS1 = 1200;
-   int fitS2 = 1800;
-   int fitSsig1 = 1325;
-   int fitSsig2 = 1445;
+   TH1F *histSmtdLDvertLm = (TH1F*)hSm_mtdL_dvert_Lm -> Clone("histSmtdLDvertLm");
+   histSmtdLDvertLm -> GetXaxis() -> SetTitle("m_{p#pi^{+}#pi^{-}}");
+   histSmtdLDvertLm -> GetXaxis() -> SetTitleSize(.05);
+   histSmtdLDvertLm -> GetXaxis() -> SetLabelSize(.05);
+   histSmtdLDvertLm -> Draw();
+   
+   const char *hnameSmtdLDvertLm = histSmtdLDvertLm -> GetName();
+   char namePeakSmtdLDvertLm[50];
+   sprintf(namePeakSmtdLDvertLm, "%s_peak", hnameSmtdLDvertLm);
 
-   TF1 *func = new TF1("func", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) ) + pol6(3)", fitS1, fitS2);
-   func -> SetParameters(1.40794e+09, 36, 1.38415e+03,
-			 -9.08964e+05,2.35372e+03,-2.33096e+00,
-			 1.08507e-03,-2.28651e-07,1.57016e-11
-//7.05408e+08, 4.85365e+01, 1.38326e+03,
-			 //-7.73781e+04, 9.95020e+01, 2.58496e-03, -2.64161e-05,
-			 //-1.04672e-08, 4.64373e-12, 5.82781e-15, -2.15897e-18
+   cout << ">>>>>>>>fit BG MtdL dVert Lm cuts<<<<<<<<<" << endl;
+   TF1 * fhistSmtdLDvertLm = new TF1("fhistSmtdLDvertLm", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) ) + pol6(3)", fitS1, fitS2);
+   fhistSmtdLDvertLm -> SetParameters(
+       1.40794e+09, 36, 1.38415e+03,
+       -9.08964e+05,2.35372e+03,-2.33096e+00,
+       1.08507e-03,-2.28651e-07,1.57016e-11
        );
-   func->SetParLimits(0,0,10000000000);
-   func->SetParLimits(1,30,40);
-   func->SetParLimits(2,1360,1400);
-      
-   histSmtdLDvertLmCl -> Fit("func", "", "", fitS1, fitS2);
-   histSmtdLDvertLmCl -> Fit("func", "", "", fitS1, fitS2);
-   //BW
-   TF1 *sig = new TF1("mybw", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) )", fitSsig1, fitSsig2);
-   //Gaus
-   //   TF1* sig = new TF1("f_sig", "gaus", 1200, 1500);
+   fhistSmtdLDvertLm -> SetParLimits(0,0,10000000000);
+   fhistSmtdLDvertLm -> SetParLimits(1,30,40);
+   fhistSmtdLDvertLm -> SetParLimits(2,1360,1400);
 
-   TF1* bkg = new TF1("f_bkg", "pol6(0)", fitS1, fitS2);
-   double par[11];
-   func -> GetParameters(par);
-   sig -> SetParameters(par);
-   bkg -> SetParameters(&par[3]);
+   histSmtdLDvertLm -> Fit("fhistSmtdLDvertLm", "0", "", fitS1, fitS2);
+   histSmtdLDvertLm -> Fit("fhistSmtdLDvertLm", "0", "", fitS1, fitS2);
+   histSmtdLDvertLm -> SetName(namePeakSmtdLDvertLm);
+   TF1 * fsigSmtdLDvertLm = new TF1("fsigSmtdLDvertLm", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) )", fitSsig1, fitSsig2);
+   TF1 * fbgSmtdLDvertLm = new TF1("fbgSmtdLDvertLm", "pol6(0)", fitS1, fitS2);
+   double parSmtdLDvertLm[12];
+   fhistSmtdLDvertLm -> GetParameters(parSmtdLDvertLm);
+   fsigSmtdLDvertLm -> SetParameters(parSmtdLDvertLm);
+   fbgSmtdLDvertLm -> SetParameters(&parSmtdLDvertLm[3]);
 
-   float cntsig = sig->Integral(fitSsig1,fitSsig2);
-      
-   sig -> SetLineColor(kBlack);
-   sig -> SetMarkerColor(kBlack);
-   sig -> SetMarkerStyle(20);
-   sig -> SetMarkerSize(.5);
-   sig -> Draw("same");
-   bkg->SetLineColor(kBlue);
-   bkg->SetMarkerColor(kBlue);
-   bkg -> SetMarkerStyle(20);
-   bkg -> SetMarkerSize(.5);
-   bkg->Draw("same");
+   TH1F *histSigSmtdLDvertLm = (TH1F*)histSmtdLDvertLm -> Clone("histSigSmtdLDvertLm");
+   TH1F *histBGSmtdLDvertLm = (TH1F*)histSmtdLDvertLm -> Clone("histBGSmtdLDvertLm");
+   histSigSmtdLDvertLm -> Add(fbgSmtdLDvertLm, -1);
+   histSigSmtdLDvertLm -> SetLineColor(kGreen);
+   histBGSmtdLDvertLm -> Add(fsigSmtdLDvertLm, -1);
+   histBGSmtdLDvertLm -> SetLineColor(kRed);
+   histBGSmtdLDvertLm -> SetMarkerColor(kRed);
+   histBGSmtdLDvertLm -> SetMarkerStyle(20);
+   histBGSmtdLDvertLm -> SetMarkerSize(.7);
+
+   fsigSmtdLDvertLm -> SetLineColor(kBlack);
+   fsigSmtdLDvertLm -> SetMarkerColor(kBlack);
+   fsigSmtdLDvertLm -> SetMarkerStyle(20);
+   fsigSmtdLDvertLm -> SetMarkerSize(.5);
+   fsigSmtdLDvertLm -> Draw("same");
+   fbgSmtdLDvertLm -> SetLineColor(kBlue);
+   fbgSmtdLDvertLm -> SetMarkerColor(kBlue);
+   fbgSmtdLDvertLm -> SetMarkerStyle(20);
+   fbgSmtdLDvertLm -> SetMarkerSize(.5);
+   fbgSmtdLDvertLm -> Draw("same");
+   
+   double cntSmSigSmtdLDvertLm = fsigSmtdLDvertLm -> Integral(fitSsig1,fitSsig2);
+   double cntSmBGSmtdLDvertLm = fbgSmtdLDvertLm -> Integral(fitSsig1,fitSsig2);
+
    //end gaus+pol7 fit
 
    char textbw[64], gam[64], mSig[64], nSig[64];
    sprintf(textbw, "Breit-Wigner:\n");
-   sprintf(gam, "#Gamma = %.2f MeV", par[1]);
-   sprintf(mSig, "M = %.2f", par[2]);
-   sprintf(nSig, "N = %.0f", cntsig);
+   sprintf(gam, "#Gamma = %.2f MeV", parSmtdLDvertLm[1]);
+   sprintf(mSig, "M = %.2f", parSmtdLDvertLm[2]);
+   sprintf(nSig, "N = %.0f", cntSmSigSmtdLDvertLm);
    TPaveText *ptBW = new TPaveText(.75, .4, .8, .6, "NDC");
    ptBW -> SetFillColor(0);
    ptBW -> SetBorderSize(0);
@@ -1845,32 +1602,35 @@ void sigmaAna(){
    ///
    //S mtdL dVert Lm mtdS
    TH1F *histSmtdS = (TH1F*)hSm_mtdS -> Clone("histSmtdS");
+   histSmtdS -> GetXaxis() -> SetTitle("m_{p#pi^{+}#pi^{-}}");
+   histSmtdS -> GetXaxis() -> SetTitleSize(.05);
+   histSmtdS -> GetXaxis() -> SetLabelSize(.05);
+   histSmtdS -> Draw();
+   
    const char *hnameSmtdS = histSmtdS -> GetName();
    char namePeakSmtdS[50];
    sprintf(namePeakSmtdS, "%s_peak", hnameSmtdS);
    
    cout << ">>>>>>>>fit BG MtdL dVert MtdS cuts<<<<<<<<<" << endl;
-   TF1 * fhistSmtdS = new TF1("fhistSmtdS", "gaus(0)+gaus(3)+pol4(6)", 1330, 1405);
+   TF1 * fhistSmtdS = new TF1("fhistSmtdS", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) ) + pol6(3)", fitS1, fitS2);
    fhistSmtdS -> SetParameters(
-			  3.92029e+03,1.11517e+03,1.64829e+00,
-			  1.30091e+03,1.11477e+03,4.04957e+00,
-			  -1.04526e+06,9.41713e+02,7.93433e-01,-7.10776e-04
-   			  );
-   fhistSmtdS -> SetParLimits(0, 0, 100000);
-   fhistSmtdS -> SetParLimits(1, 1378, 1398);
-   fhistSmtdS -> SetParLimits(2, 0, 10);
-   fhistSmtdS -> SetParLimits(3, 0, 100000);
-   fhistSmtdS -> SetParLimits(4, 1370, 1400);
-   fhistSmtdS -> SetParLimits(5, 0, 10);
-   histSmtdS -> Fit("fhistSmtdS", "0", "", 1370, 1395);
-   histSmtdS -> Fit("fhistSmtdS", "0", "", 1370, 1395);
+       1.40794e+09, 36, 1.38415e+03,
+       -9.08964e+05,2.35372e+03,-2.33096e+00,
+       1.08507e-03,-2.28651e-07,1.57016e-11
+       );
+   fhistSmtdS -> SetParLimits(0,0,10000000000);
+   fhistSmtdS -> SetParLimits(1,30,40);
+   fhistSmtdS -> SetParLimits(2,1360,1400);
+   
+   histSmtdS -> Fit("fhistSmtdS", "0", "", fitS1, fitS2);
+   histSmtdS -> Fit("fhistSmtdS", "0", "", fitS1, fitS2);
    histSmtdS -> SetName(namePeakSmtdS);
-   TF1 * fsigSmtdS = new TF1("fsigSmtdS", "gaus(0)+gaus(3)", 1370, 1395);
-   TF1 * fbgSmtdS = new TF1("fbgSmtdS", "pol4(0)", 1360, 1405);
+   TF1 * fsigSmtdS = new TF1("fsigSmtdS", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) )", fitSsig1, fitSsig2);
+   TF1 * fbgSmtdS = new TF1("fbgSmtdS", "pol6(0)", fitS1, fitS2);
    double parSmtdS[12];
    fhistSmtdS -> GetParameters(parSmtdS);
    fsigSmtdS -> SetParameters(parSmtdS);
-   fbgSmtdS -> SetParameters(&parSmtdS[6]);
+   fbgSmtdS -> SetParameters(&parSmtdS[3]);
 
    TH1F *histSigSmtdS = (TH1F*)histSmtdS -> Clone("histSigSmtdS");
    TH1F *histBGSmtdS = (TH1F*)histSmtdS -> Clone("histBGSmtdS");
@@ -1882,93 +1642,63 @@ void sigmaAna(){
    histBGSmtdS -> SetMarkerStyle(20);
    histBGSmtdS -> SetMarkerSize(.7);
 
-   double a = histSigSmtdS -> FindBin(1378);
-   double b = histSigSmtdS -> FindBin(1398);
-   double cntSmSigSmtdS = histSigSmtdS -> Integral(a,b);
-   double cntSmBGSmtdS = histBGSmtdS -> Integral(a,b);
-   histSigSmtdS -> GetXaxis() -> SetRangeUser(1370,1405);
-   histBGSmtdS -> GetXaxis() -> SetRangeUser(1370,1405);
+   fsigSmtdS -> SetLineColor(kBlack);
+   fsigSmtdS -> SetMarkerColor(kBlack);
+   fsigSmtdS -> SetMarkerStyle(20);
+   fsigSmtdS -> SetMarkerSize(.5);
+   fsigSmtdS -> Draw("same");
+   fbgSmtdS -> SetLineColor(kBlue);
+   fbgSmtdS -> SetMarkerColor(kBlue);
+   fbgSmtdS -> SetMarkerStyle(20);
+   fbgSmtdS -> SetMarkerSize(.5);
+   fbgSmtdS -> Draw("same");
+   
+   double cntSmSigSmtdS = fsigSmtdS -> Integral(fitSsig1,fitSsig2);
+   double cntSmBGSmtdS = fbgSmtdS -> Integral(fitSsig1,fitSsig2);
+
  ///
-   /* //S mtdL dLV Lm mtdS pvz
-   TH1F *histSmtdSpvz = (TH1F*)hSm_mtdS_pvz -> Clone("histSmtdSpvz");
-   const char *hnameSmtdSpvz = histSmtdSpvz -> GetName();
-   char namePeakSmtdSpvz[50];
-   sprintf(namePeakSmtdSpvz, "%s_peak", hnameSmtdSpvz);
-
-   cout << ">>>>>>>>fit BG MtdL dLV Lm MtdS DLv cuts<<<<<<<<<" << endl;
-   TF1 * fhistSmtdSpvz = new TF1("fhistSmtdSpvz", "gaus(0)+gaus(3)+pol4(6)", 1330, 1405);
-   fhistSmtdSpvz -> SetParameters(
-       3.92029e+03,1.11517e+03,1.64829e+00,
-       1.30091e+03,1.11477e+03,4.04957e+00,
-       -1.04526e+06,9.41713e+02,7.93433e-01,-7.10776e-04
-       );
-   fhistSmtdSpvz -> SetParLimits(0, 0, 100000);
-   fhistSmtdSpvz -> SetParLimits(1, 1378, 1398);
-   fhistSmtdSpvz -> SetParLimits(2, 0, 10);
-   fhistSmtdSpvz -> SetParLimits(3, 0, 100000);
-   fhistSmtdSpvz -> SetParLimits(4, 1370, 1450);
-   fhistSmtdSpvz -> SetParLimits(5, 0, 10);
-   histSmtdSpvz -> Fit("fhistSmtdSpvz", "0", "", 1370, 1395);
-   histSmtdSpvz -> Fit("fhistSmtdSpvz", "0", "", 1370, 1395);
-   histSmtdSpvz -> SetName(namePeakSmtdSpvz);
-   TF1 * fsigSmtdSpvz = new TF1("fsigSmtdSpvz", "gaus(0)+gaus(3)", 1370, 1395);
-   TF1 * fbgSmtdSpvz = new TF1("fbgSmtdSpvz", "pol4(0)", 1370, 1395);
-   double parSmtdSpvz[12];
-   fhistSmtdSpvz -> GetParameters(parSmtdSpvz);
-   fsigSmtdSpvz -> SetParameters(parSmtdSpvz);
-   fbgSmtdSpvz -> SetParameters(&parSmtdSpvz[6]);
-
-   TH1F *histSigSmtdSpvz = (TH1F*)histSmtdSpvz- > Clone("histSigSmtdSpvz");
-   TH1F *histBGSmtdSpvz = (TH1F*)histSmtdSpvz -> Clone("histBGSmtdSpvz");
-   histSigSmtdSpvz -> Add(fbgSmtdSpvz, -1);
-   histSigSmtdSpvz -> SetLineColor(kGreen);
-   histBGSmtdSpvz -> Add(fsigSmtdSpvz, -1);
-   histBGSmtdSpvz -> SetLineColor(kRed);
-   histBGSmtdSpvz -> SetMarkerColor(kRed);
-   histBGSmtdSpvz -> SetMarkerStyle(20);
-   histBGSmtdSpvz -> SetMarkerSize(.7);
-
-   double a = histSigSmtdSpvz -> FindBin(1378);
-   double b = histSigSmtdSpvz -> FindBin(1398);
-   double cntSmSigSmtdSpvz = histSigSmtdSpvz -> Integral(a,b);
-   double cntSmBGSmtdSpvz = histBGSmtdSpvz -> Integral(a,b);
-   histSigSmtdSpvz -> GetXaxis() -> SetRangeUser(1370,1395);
-   histBGSmtdSpvz -> GetXaxis() -> SetRangeUser(1370,1395);
-   ///
-   */
    //end BG
    
    cout << "nentries=" << nentries << endl << "S: " << endl << "Lambda:" << " Lnc=" << cntLmSigLnc << " LmtdL=" << cntLmSigLmtd << " LmtdLdVert=" << cntLmSigLmtdDvert << endl;
-   cout << "Sigma: " << " Snc=" << cntSmSigSnc << " SmtdL=" << cntSmSigSmtdL << " SmtdLdVert=" << cntSmSigSmtdLDvert << " SLcuts=" << cntSmSigSmtdLDvertLm  << endl;
+   cout << "Sigma: " << " Snc=" << cntSmSigSnc << " SmtdL=" << cntSmSigSmtdL << " SmtdLdVert=" << cntSmSigSmtdLDvert << " SLcuts=" << cntSmSigSmtdLDvertLm  << "SLcutsMtdS" << cntSmSigSmtdS << endl;
    
    cout << "B: " << endl << "Lambda:" << " Lnc=" << cntLmBGLnc << " LmtdL=" << cntLmBGLmtd << " LmtdLdVert=" << cntLmBGLmtdDvert << endl;
-    cout << "Sigma: " << " Snc=" << cntSmBGSnc << " SmtdL=" << cntSmBGSmtdL << " SmtdLdVert=" << cntSmBGSmtdLDvert << " SLcuts=" << cntSmBGSmtdLDvertLm << endl;
+   cout << "Sigma: " << " Snc=" << cntSmBGSnc << " SmtdL=" << cntSmBGSmtdL << " SmtdLdVert=" << cntSmBGSmtdLDvert << " SLcuts=" << cntSmBGSmtdLDvertLm << " SLcutsMtdS" << cntSmBGSmtdS << endl;
     
     cout << "S/B: " << endl << "Lambda: " << " Lnc=" << cntLmSigLnc/cntLmBGLnc << " LmtdL=" << cntLmSigLmtd/cntLmBGLmtd << " LmtdLdVert=" << cntLmSigLmtdDvert/cntLmBGLmtdDvert << endl;
-    cout << "Sigma: " << //" Snc=" << cntSmBGSnc/cntSmBGSnc << " SmtdL=" << cntSmBGSmtdL/cntSmBGSmtdL << " SmtdLdLV=" << cntSmBGSmtdLDlv/cntSmBGSmtdLDlv <<
-	" SLcuts=" << cntSmSigSmtdLDvertLm/cntSmBGSmtdLDvertLm << endl;       
+    cout << "Sigma: " << " Snc=" << cntSmSigSnc/cntSmBGSnc << " SmtdL=" << cntSmSigSmtdL/cntSmSigSmtdL << " SmtdLdVert=" << cntSmSigSmtdLDvert/cntSmBGSmtdLDvert << " SLcuts=" << cntSmSigSmtdLDvertLm/cntSmBGSmtdLDvertLm << " SLcutsMtdS" << cntSmSigSmtdS/cntSmBGSmtdS << endl;       
 
-    double sgfLnc, sgfLmtdL, sgfLmtdLdLV, sgfLdLV,
-	sgfSLcuts;
-/*    sgfLnc = cntLmSigLnc/sqrt(cntLmSigLnc + cntLmBGLnc);
-    sgfLmtd = cntLmSigLmtd/sqrt(cntLmSigLmtd + cntLmBGLmtd);
-    sgfLmtdLdLV = cntLmSigLmtdDlv/sqrt(cntLmSigLmtdDlv + cntLmBGLmtdDlv);
-    sgfLdLV = cntLmSigLDlv/sqrt(cntLmSigLDlv + cntLmBGLDlv);
-    sgfLmtdLdLV = cntSmSigSmtdLDlvLm/sqrt(cntSmSigSmtdLDlvLm + cntSmBGSmtdLDlvLm);
+    double sgfLnc, sgfLmtdL, sgfLmtdLdVert,
+	sgfSnc, sgfSmtdL, sgfSmtdLdVert, sgfSLcuts, sgfSLcutsMtdS;
+    if((cntLmSigLnc + cntLmBGLnc) > 0)
+	sgfLnc = cntLmSigLnc/sqrt(cntLmSigLnc + cntLmBGLnc);
+    if((cntLmSigLmtd + cntLmBGLmtd) > 0)
+	sgfLmtdL = cntLmSigLmtd/sqrt(cntLmSigLmtd + cntLmBGLmtd);
+    if((cntLmSigLmtdDvert + cntLmBGLmtdDvert) > 0)
+	sgfLmtdLdVert = cntLmSigLmtdDvert/sqrt(cntLmSigLmtdDvert + cntLmBGLmtdDvert);
+    if((cntSmSigSnc + cntSmBGSnc) > 0)
+	sgfSnc = cntSmSigSnc/sqrt(cntSmSigSnc + cntSmBGSnc);
+    if((cntSmSigSmtdL + cntSmBGSmtdL) > 0)
+	sgfSmtdL = cntSmSigSmtdL/sqrt(cntSmSigSmtdL + cntSmBGSmtdL);
+    if((cntSmSigSmtdLDvert + cntSmBGSmtdLDvert) > 0)
+	sgfSmtdLdVert = cntSmSigSmtdLDvert/sqrt(cntSmSigSmtdLDvert + cntSmBGSmtdLDvert);
+    if((cntSmSigSmtdLDvertLm + cntSmBGSmtdLDvertLm) > 0)
+	sgfSLcuts = cntSmSigSmtdLDvertLm/sqrt(cntSmSigSmtdLDvertLm + cntSmBGSmtdLDvertLm);
+    if((cntSmSigSmtdS + cntSmBGSmtdS) > 0)
+	sgfSLcutsMtdS = cntSmSigSmtdS/sqrt(cntSmSigSmtdS + cntSmBGSmtdS);
 
-    cout << "significance: " << endl << "Lambda:" << " Lnc=" << sgfLnc << " LmtdL=" << sgfLmtd << " LmtdLdLV=" << sgfLmtdLdLV << " LdLV=" << sgfLdLV << endl;
-    cout << "Sigma: " << //" Snc=" << cntSmBGSnc << " SmtdL=" << cntSmBGSmtdL << " SmtdLdLV=" << cntSmBGSmtdLDlv <<
-	" SLcuts=" << sgfLmtdLdLV << endl;
-
+    cout << "significance: " << endl << "Lambda:" << " Lnc=" << sgfLnc << " LmtdL=" << sgfLmtdL << " LmtdLdVert=" << sgfLmtdLdVert <<  endl;
+    cout << "Sigma: " << " Snc=" << sgfSnc << " SmtdL=" << sgfSmtdL << " SmtdLdVert=" << sgfSmtdLdVert <<
+	" SLcuts=" << sgfSLcuts << " SLcutsMtdS=" << sgfSLcutsMtdS << endl;
     
    //reco effi
    double effLS, effLBG, effSS, effSBG;
-   effLS = cntLmSigLmtdDlv/nentries*100;
-   effLBG = cntLmBGLmtdDlv/nentries*100;
-   effSS = cntSmSigSmtdLDlv/nentries*100;
-   effSBG = cntSmBGSmtdLDlv/nentries*100;
-   cout << "Effi: LMtdDlvLm = " << effLS << " LMtdDlvLmBG = " << effLBG << " SMtdLDlvSm = " << effSS << " SMtdLDlvSmBG = " << effSBG << endl;
-*/
+   effLS = cntLmSigLmtdDvert/nentries*100;
+//   effLBG = cntLmBGLmtdDlv/nentries*100;
+   effSS = cntSmSigSmtdLDvertLm/nentries*100;
+//   effSBG = cntSmBGSmtdLDlv/nentries*100;
+   cout << "Effi: LMtdDvertLm = " << effLS << " SMtdLDvertSm = " << effSS  << endl;
+
      
    //edit histos
    hdEdx_Mdc -> GetXaxis() -> SetTitle("p*q [q*MeV/c]");
@@ -2347,9 +2077,9 @@ void sigmaAna(){
    cSsbg2 -> cd(3);
    nice_canv1(gPad);
    hSm_mtdL_dvert_Lm -> Draw();
-   func -> Draw("same");
-   sig -> Draw("same p");
-   bkg -> Draw("same p");
+   fhistSmtdLDvertLm -> Draw("same");
+   fsigSmtdLDvertLm -> Draw("same p");
+   fbgSmtdLDvertLm -> Draw("same p");
    ptBW -> Draw("same");
    
    
@@ -2372,17 +2102,21 @@ void sigmaAna(){
    cPidCuts -> Write();
 //<<<<
    cMtdScan -> Write();
+   cMtdScanSigma -> Write();
    gmtdscan -> Write();
    //cdLVScan -> Write();
    gdVertscan -> Write();
    //gdLVmtdL -> Write();
+   gmtdLpiscan -> Write();
    gdVertmtdL -> Write();
-   for(int i = 0; i < 15; i++)
+   for(int i = 0; i < 15; i++){
 //       cmtdLdLV[i] -> Write();
        cmtdLdvert[i] -> Write();
-//<<<<
+       cmtdLdvertSigma[i] -> Write();       
+   }
 //   cMtdLpiScan -> Write();
-   gmtdLpiscan -> Write();
+//<<<<
+
 //
    hPrimVertZ -> Write();
    hLDecVertZ -> Write();
