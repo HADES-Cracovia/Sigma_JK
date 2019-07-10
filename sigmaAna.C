@@ -12,6 +12,7 @@
 //#include "TTreeReader.h"
 //#include "TTreeReaderValue.h"
 #include "bgSubtr.C"
+#include "peakBG.C"
 gROOT->LoadMacro("BW.C");
 
 void nice_canv1(TVirtualPad * c)
@@ -764,7 +765,7 @@ void sigmaAna(){
        cMtdScan -> cd(i+1);
        htmp = (TH1F*)hmtdLscan[i] -> Clone("htmp");
        const char *hnametmp = htmp -> GetName();
-       namePeaktmp[50] = 0;
+       namePeaktmp[] = 0;
        sprintf(namePeaktmp, "%s_peak", hnametmp);
        
        cout << "--" << i << "--" << endl;
@@ -913,6 +914,14 @@ void sigmaAna(){
    //MTD L_dVert scan
    int n = 0;
    double partmp[15];
+   TF1 *ftmp, *fsigtmp, *fbgtmp;
+   TH1F *htmp;
+   double a = 1085;
+   double b = 1150;
+   double fa = 1105;
+   double fb = 1125;
+   char namePeaktmp[50];
+   ofstream cout("output.txt");
    for(int i = 0; i < 15; i++){
        mtdLi_dvert = (i+1)*2;
        for(int j = 0; j < 15; j++){
@@ -921,20 +930,18 @@ void sigmaAna(){
 	   //calc Sgn for each mtdL value
 	   char namehtmp[50];
 	   sprintf(namehtmp, "%htmp_mtdi%d_dvert%d", mtdLi_dvert, dverti_mtdL);
-	   TH1F *htmp = (TH1F*)hdvertmtdLscan[i][j] -> Clone(namehtmp);
+	   htmp = (TH1F*)hdvertmtdLscan[i][j] -> Clone(namehtmp);
 	   const char *hnametmp = htmp -> GetName();
-	   char namePeaktmp[50];
+	   namePeaktmp[] = 0;
 	   sprintf(namePeaktmp, "%s_peak", hnametmp);
        
 	   cout << "--mtdL" << i << "dvert" << j << "--" << endl;
 
-	   double a = 1085;
-	   double b = 1150;
-	   double fa = 1105;
-	   double fb = 1125;
-	   TF1 * ftmp = new TF1("ftmp", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol7(4)", a, b);
+	   ftmp = new TF1("ftmp", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol7(4)", a, b);
+	   fsigtmp = new TF1("fsigtmp", "[0]*TMath::Voigt(x+[1],[2],[3])", a, b);
+	   fbgtmp = new TF1("fbgtmp", "pol7(0)", a, b);
 	   
-	   if(i == 0 && j == 0){
+	   if(j == 0){
 	   ftmp -> SetParameters(
 	       1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
 	       -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
@@ -943,18 +950,16 @@ void sigmaAna(){
 	       ftmp -> SetParameters(partmp);
 	   }
 	   
-	   TF1 * fbgtmp = new TF1("fbgtmp", "pol7(0)", a, b);
-	   TF1 * fsigtmp = new TF1("fsigtmp", "[0]*TMath::Voigt(x+[1],[2],[3])", a, b);
+	   htmp -> Fit("ftmp", "0", "", a, b);
+	   htmp -> Fit("ftmp", "0", "", a, b);
+	   htmp -> SetName(namePeaktmp);
 	   
-	   htmp -> Fit("ftmp", "0", "", a, b);
-	   htmp -> Fit("ftmp", "0", "", a, b);
-
 	   partmp[] = 0;
 	   ftmp -> GetParameters(partmp);
 	   fsigtmp -> SetParameters(partmp);
 	   fbgtmp -> SetParameters(&partmp[4]);
 
-	   TH1F *histSigtmp = (TH1F*)htmp -> Clone("histSigtmp");
+/*	   TH1F *histSigtmp = (TH1F*)htmp -> Clone("histSigtmp");
 	   TH1F *histBGtmp = (TH1F*)htmp -> Clone("histBGtmp");
 	   histSigtmp -> Add(fbgtmp, -1);
 	   histSigtmp -> SetLineColor(kGreen);
@@ -963,19 +968,19 @@ void sigmaAna(){
 	   histBGtmp -> SetMarkerColor(kRed);
 	   histBGtmp -> SetMarkerStyle(20);
 	   histBGtmp -> SetMarkerSize(.7);
-
+*/
 	   ftmp -> SetLineColor(kBlack);
 	   fsigtmp -> SetLineColor(kGreen);
 	   fbgtmp -> SetLineColor(kRed);
 	   
-	   double as = histSigtmp -> FindBin(1110);
-	   double bs = histSigtmp -> FindBin(1120);
-	   double ab = histBGtmp -> FindBin(1110);
-	   double bb = histBGtmp -> FindBin(1120);
-	   sg4 = fsigtmp -> Integral(as,bs);
-	   bg4 = fbgtmp -> Integral(ab,bb);
-	   histSigtmp -> GetXaxis() -> SetRangeUser(1110,1120);
-	   histBGtmp -> GetXaxis() -> SetRangeUser(1090,1140);
+	   //double as = histSigtmp -> FindBin(1110);
+	   //double bs = histSigtmp -> FindBin(1120);
+	   //double ab = histBGtmp -> FindBin(1110);
+	   //double bb = histBGtmp -> FindBin(1120);
+	   sg4 = fsigtmp -> Integral(fa,fb);
+	   bg4 = fbgtmp -> Integral(fa,fb);
+	   //histSigtmp -> GetXaxis() -> SetRangeUser(1110,1120);
+	   //histBGtmp -> GetXaxis() -> SetRangeUser(1090,1140);
 
 	   htmp -> Draw();
 	   ftmp -> Draw("same");
@@ -984,15 +989,21 @@ void sigmaAna(){
 
 	   if(mtdLi_dvert == cmtd){
 	       dvertVal[j] = dverti_mtdL;
-	       sgnVal4a[j] = sg4/sqrt(sg4+bg4);
+	       if(sg4 < 0 || bg4 < 0)
+		   sgnVal4a[j] = 0;
+	       else
+		   sgnVal4a[j] = sg4/sqrt(sg4+bg4);
 	   }   
-	   
+	       
 	   if(sg4 < 0 || bg4 < 0)
 	       sgnVal4[i][j] = 0;
 	   else
 	       sgnVal4[i][j] = sg4/sqrt(sg4+bg4);
 	   cout << "sg4, bg4, n, mtdi, dvertj, sgn: " << sg4 << " " << bg4 << " " << n << " "<< dverti_mtdL << " " << mtdLi_dvert << " " << sgnVal4[i][j] << endl;
 	   cout << ">>>>>>>>>>" << sgnVal4[i][j] << "<<<<<<<<<<<<<<" << endl;
+	   for(int w = 0; w < 15; w++)
+	       cout << partmp[w] << " " << endl;
+	   
 	   gdVertmtdL -> SetPoint(n, dverti_mtdL, mtdLi_dvert, sgnVal4[i][j]);
 	   n++;
 
@@ -1045,14 +1056,14 @@ void sigmaAna(){
        histBGtmp -> SetMarkerStyle(20);
        histBGtmp -> SetMarkerSize(.7);
        
-       double as = histSigtmp -> FindBin(1378);
+/*       double as = histSigtmp -> FindBin(1378);
        double bs = histSigtmp -> FindBin(1398);
        double ab = histBGtmp -> FindBin(1378);
        double bb = histBGtmp -> FindBin(1398);
-       sg5 = histSigtmp -> Integral(as,bs);
-       bg5 = histBGtmp -> Integral(ab,bb);
-       histSigtmp -> GetXaxis() -> SetRangeUser(1370,1405);
-       histBGtmp -> GetXaxis() -> SetRangeUser(1370,1405);
+*/     sg5 = histSigtmp -> Integral(fa,fb);
+       bg5 = histBGtmp -> Integral(fa,fb);
+       //    histSigtmp -> GetXaxis() -> SetRangeUser(1370,1405);
+       //    histBGtmp -> GetXaxis() -> SetRangeUser(1370,1405);
 
        htmp -> Draw();
        histBGtmp -> Draw("same p");
@@ -1537,7 +1548,7 @@ void sigmaAna(){
    sprintf(namePeakSmtdLDvertLm, "%s_peak", hnameSmtdLDvertLm);
 
    cout << ">>>>>>>>fit BG MtdL dVert Lm cuts<<<<<<<<<" << endl;
-   TF1 * fhistSmtdLDvertLm = new TF1("fhistSmtdLDvertLm", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) ) + pol6(3)", fitS1, fitS2);
+/*   TF1 * fhistSmtdLDvertLm = new TF1("fhistSmtdLDvertLm", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) ) + pol6(3)", fitS1, fitS2);
    fhistSmtdLDvertLm -> SetParameters(
        1.40794e+09, 36, 1.38415e+03,
        -9.08964e+05,2.35372e+03,-2.33096e+00,
@@ -1549,10 +1560,10 @@ void sigmaAna(){
 
    histSmtdLDvertLm -> Fit("fhistSmtdLDvertLm", "0", "", fitS1, fitS2);
    histSmtdLDvertLm -> Fit("fhistSmtdLDvertLm", "0", "", fitS1, fitS2);
-   histSmtdLDvertLm -> SetName(namePeakSmtdLDvertLm);
+*/ histSmtdLDvertLm -> SetName(namePeakSmtdLDvertLm);
    TF1 * fsigSmtdLDvertLm = new TF1("fsigSmtdLDvertLm", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) )", fitSsig1, fitSsig2);
    TF1 * fbgSmtdLDvertLm = new TF1("fbgSmtdLDvertLm", "pol6(0)", fitS1, fitS2);
-   double parSmtdLDvertLm[12];
+   double parSmtdLDvertLm[12] = peakBG(histSmtdLDvertLm);
    fhistSmtdLDvertLm -> GetParameters(parSmtdLDvertLm);
    fsigSmtdLDvertLm -> SetParameters(parSmtdLDvertLm);
    fbgSmtdLDvertLm -> SetParameters(&parSmtdLDvertLm[3]);
@@ -1577,7 +1588,11 @@ void sigmaAna(){
    fbgSmtdLDvertLm -> SetMarkerStyle(20);
    fbgSmtdLDvertLm -> SetMarkerSize(.5);
    fbgSmtdLDvertLm -> Draw("same");
-   
+
+   TH1F *hpeakBG = (TH1F*)histSmtdLDvertLm -> Clone("hpeakBG");
+   hpeakBG -> Add(fhistSmtdLDvertLm, -1);
+   hpeakBG -> Draw("same");
+      
    double cntSmSigSmtdLDvertLm = fsigSmtdLDvertLm -> Integral(fitSsig1,fitSsig2);
    double cntSmBGSmtdLDvertLm = fbgSmtdLDvertLm -> Integral(fitSsig1,fitSsig2);
 
