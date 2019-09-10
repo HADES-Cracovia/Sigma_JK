@@ -1,0 +1,13 @@
+
+
+- list of simulated channels: on git ()
+- list of possible signal and BG channels: redmine
+
+Simulations:
+1. PLUTO: /lustre/nyx/hades/user/jkubos/hades/pp35/simulations/pluto
+2. GEANT: /lustre/nyx/hades/user/jkubos/hades/pp35/simulations/geantOld
+3. HYDRA: /lustre/nyx/hades/user/jkubos/hades/pp35/simulations/simdst
+
+Analysis:
+4. Tifini3 (event filter): /u/jkubos/analiza/pp35/tools/tifini3_event_filters/ef_hyperonp_pp35.*
+5. Final analysis: /u/jkubos/analiza/gitdir/Sigma_JK (on git).

@@ -1,0 +1,21 @@
+@ Lines starting with @ are comments
+@ Columns:
+@  Ch            - channel number
+@  Width         - ingore, set to 1.0
+@  Crosssection  - ignore, set to 1.0
+@  Reaction      - channel reaction
+@
+@ when first number is divisible by 3 (0*, 3*, 6* etc.) the channel describe background for Lambda(1520) diLepton decay
+@ when first number is even (2*, 4*, 6* etc.) the channel describe background for cascade production
+@ when firs number is divisible by 2 and 3 (0*,6*), channel belongs to both simulations
+
+@Following channels have been simulated:
+
+@Ch     Width	Crossection	Reaction
+
+@Signal
+001	1.0	22.27 ub	Sigma+(1385)K+n
+002	1.0	1.0		Sigma+(1385)K0p
+
+@BG
+009	1.0	1.0		Delta++[ppi+]ppi-
