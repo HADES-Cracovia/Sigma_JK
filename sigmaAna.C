@@ -33,7 +33,7 @@ void sigmaAna(){
     int lm1 = 1060;
     int lm2 = 1300;
     int sm1 = 1200;
-    int sm2 = 2000;
+    int sm2 = 1800;
     int nbinsm = 200;
     int nbins3 = 100;
     int mtdmin = -5;
@@ -68,6 +68,8 @@ void sigmaAna(){
    TH1F *hdVert = new TH1F("hdVert", "Distance between verticies (no cuts)", 100, -10, 90);
    TH1F *hdLVR = new TH1F("hdLVR", "Lambda decay vertex - Primary Vertex", 40, -10, 30);
    TH1F *hPrimVertZ = new TH1F("hPrimVertZ", "Primary vertex Z", 100, -100, 150);
+   TH1F *hLDecVertX = new TH1F("hLDecVertX", "Lambda decay vertex X", 100, -100, 150);
+   TH1F *hLDecVertY = new TH1F("hLDecVertY", "Lambda decay vertex Y", 100, -100, 150);
    TH1F *hLDecVertZ = new TH1F("hLDecVertZ", "Lambda decay vertex Z", 100, -100, 150);
 
    //mtd L cut
@@ -171,6 +173,14 @@ void sigmaAna(){
    TH1F *hinvMAB0 = new TH1F("hinvMAB0", "hinvMAB (no cuts)", 200, 1066, 4000);
    TH2F *hDpim0 = new TH2F("hDpim0", "hDpim (no cuts)", nbins3, dminx, dmaxx, nbins3, dminy, dmaxy);
    TH2F *hDpip0 = new TH2F("hDpip0", "hDpip (no cuts)", nbins3, dminx, dmaxx, nbins3, dminy, dmaxy);
+
+   //side band
+   TH1F *hLm_sb = new TH1F("hLm_sb", "hLm_sb", nbinsm, lm1, lm2);
+   TH1F *hSm_sb = new TH1F("hSm_sb", "hSm_sb", nbinsm, sm1, sm2);
+   int sbl1 = 1085;
+   int sbl2 = 1100;
+   int sbp1 = 1130;
+   int sbp2 = 1150;
    
    //vertex studies
    int dvertmin = -100;
@@ -298,12 +308,12 @@ void sigmaAna(){
    *///end myCuts
 
    //def top cuts
-   float cmtd = 25; //10; //mm
+   float cmtd = 14;//25; //mm       
    float cvertLz1 = -20; //mm
    float cvertLz2 = 300; //mm
    float csVL1 = 15; //mm
    float csVL2 = 80; //mm
-   float cdvert = 2; //mm distance between verticies
+   float cdvert = 5;//30; //mm distance between verticies
    float cLm1 = 1105; //MeV
    float cLm2 = 1125; //MeV
    float cmtdLpi = 15; //mm
@@ -314,7 +324,7 @@ void sigmaAna(){
    float cmm2 = 1250; //inv mass AC, MeV
    
    //variables for the MTD L scan
-   int mtdLi = 0;
+/*   int mtdLi = 0;
    TH1F *hmtdLscan[15], *hmtdLscanSigma[15];
    TCanvas *cMtdScan = new TCanvas("cMtdScan", "cMtdScan", 1200, 800);
    cMtdScan -> Divide(5,3);
@@ -330,7 +340,7 @@ void sigmaAna(){
        sprintf(nameMtdLiSigma, "hmtdLscanSigma_%d", mtdLi);
        hmtdLscanSigma[i] = new TH1F("hmtdLscanSigma", nameMtdLiSigma, 200, sm1, sm2);
    }
-   //variables for the dLV scan
+*/ //variables for the dLV scan
 /*   int dLVi = 0;
    TH1F *hdLVscan[15];
    TCanvas *cdLVScan = new TCanvas("cdLVScan", "cdLVScan", 1200, 800);
@@ -365,7 +375,7 @@ void sigmaAna(){
        }
        }*/
 //variables for the MtdL(dVert) scan
-   int dverti_mtdL = 0;
+/*   int dverti_mtdL = 0;
    int mtdLi_dvert = 0;
    TCanvas *cmtdLdvert[15], *cmtdLdvertSigma[15];
    TH1F *hdvertmtdLscan[15][15], *hdvertmtdLscanSigma[15][15];
@@ -391,9 +401,9 @@ void sigmaAna(){
 	   hdvertmtdLscanSigma[i][j] = new TH1F("hdvertmtdLscanSigma", namedverti_mtdL, 200, sm1, sm2);
        }
    }
-   //<<<<end variables for the MTD L scan
+*/ //<<<<end variables for the MTD L scan
    //variables for the MTD S scan                                                                                 
-   int mtdLpii = 0;
+/*   int mtdLpii = 0;
    TH1F *hmtdLpiscan[15];
    TCanvas *cMtdLpiScan = new TCanvas("cMtdLpiScan", "cMtdLpiScan", 1200, 800);
    cMtdLpiScan -> Divide(5,3);
@@ -405,7 +415,7 @@ void sigmaAna(){
        sprintf(nameMtdLpii, "hmtdLpiscan_%d", mtdLpii);
        hmtdLpiscan[i] = new TH1F("hmtdLpiscan", nameMtdLpii, 200, sm1, sm2);
    }                      
-   
+   */
    //read data
    TChain tree("T");
    //exp
@@ -413,20 +423,17 @@ void sigmaAna(){
       char inName[100];
        printf("apr07_day_%d.root\n",i);
        sprintf(inName, "/u/jkubos/analiza/gitdir/Sigma_JK/out_packed/apr07_day_%d.root", i);
-//     sprintf(inName, "/home/joanna/Dokumenty/HADES/Sigma/out_packed/apr07_day_%d.root", i);
-       //     sprintf(inName, "/mnt/disk1/hades/analiza/pp35/Sigma1385/pp35/exp/out_packed/apr07_day_%d.root", i);
-       //     sprintf(inName, "/u/jkubos/analiza/gitdir/Sigma_JK/_exp__.root");
 //end exp
      
    //read no packed files
    //sim
- //  ifstream f("inList_all_001");
+   /*//  ifstream f("inList_all_001");
   // if(!f) cout << "FAILED TO OPEN DST FILE!" << endl;
   // const string line;
   // while(std::getline(f, line)){
    //    char inName[line.size() + 1];
   //     strcpy(inName, line.c_str());
-/*   cout << "_" << endl ;
+   cout << "_" << endl ;
    int nSimCh = 2;
    for(int i = 1; i < nSimCh+1; i++){
        char inName[100];
@@ -636,6 +643,8 @@ void sigmaAna(){
      hSm -> Fill(Sm);
      hSp -> Fill(Sp);
      hPrimVertZ -> Fill(primVertZ);
+     hLDecVertX -> Fill(LDecVertX);
+     hLDecVertY -> Fill(LDecVertY);
      hLDecVertZ -> Fill(LDecVertZ);
      hPrimVertR -> Fill(primVertR);
      hLDecVertR -> Fill(LDecVertR);
@@ -675,7 +684,7 @@ void sigmaAna(){
 	     hdLVscan[i] -> Fill(Lm);
 	     }*/
      //MTD L && dvert scan
-     for(int i = 0; i < 15; i++){
+/*     for(int i = 0; i < 15; i++){
 	 mtdLi = (i+1)*2;
 	 if(mtd < mtdLi){
 	     hmtdLscan[i] -> Fill(Lm);
@@ -692,17 +701,17 @@ void sigmaAna(){
 	     }
 	 }
      }
-  
+*/
    //<<<<MTD L scan    
     //MTD S scan
-     if(mtd < cmtd && dVert > cdvert && Lm > cLm1 && Lm < cLm2){
+     /*   if(mtd < cmtd && dVert > cdvert && Lm > cLm1 && Lm < cLm2){
 	 for(int i = 0; i < 15; i++){
 	     mtdLpii = (i+1)*2;
 	     if(mtdLpi < mtdLpii)
 		 hmtdLpiscan[i] -> Fill(Sm);
 	 }
      }
-
+     */
      //L & S inv mass histos
      //MTD L
      if(mtd < cmtd){
@@ -712,7 +721,7 @@ void sigmaAna(){
        if(dVert > cdvert){
 	   hLm_mtdL_dvert -> Fill(Lm);
 	   hSm_mtdL_dvert -> Fill(Sm);
-       //LDecVertR-PrimVertR
+        //LDecVertR-PrimVertR
 /*       if((LDecVertR - primVertR) < csVL1){// && (LDecVertR - primVertR) < csVL2){
 	   hLm_mtdL_dLV -> Fill(Lm);
 	   hSm_mtdL_dLV -> Fill(Sm);
@@ -751,7 +760,7 @@ void sigmaAna(){
    printf("\n");
 
    //MTD L scan
-   double partmpL[15];
+/*   double partmpL[15];
    TF1 *ftmp, *fbgtmp, *fsigtmp;
    TH1F *htmp;
    char namePeaktmp[50];
@@ -763,7 +772,9 @@ void sigmaAna(){
        mtdLi = (i+1)*2;
        //calc Sgn for each mtdL value
        cMtdScan -> cd(i+1);
-       htmp = (TH1F*)hmtdLscan[i] -> Clone("htmp");
+       char namehtmp[50];
+       sprintf(namehtmp, "%htmp_mtdi%d", mtdLi);
+       htmp = (TH1F*)hmtdLscan[i] -> Clone(namehtmp);
        const char *hnametmp = htmp -> GetName();
        namePeaktmp[] = 0;
        sprintf(namePeaktmp, "%s_peak", hnametmp);
@@ -826,7 +837,7 @@ void sigmaAna(){
        cMtdScanSigma -> cd(i+1);
        hmtdLscanSigma[i] -> Draw();
    }
-
+*/
    //MTD L_dLV scan
    /*  int n = 0;
    double partmp[15];
@@ -912,16 +923,14 @@ void sigmaAna(){
    }
    */
    //MTD L_dVert scan
-   int n = 0;
+/*   int n = 0;
    double partmp[15];
    TF1 *ftmp, *fsigtmp, *fbgtmp;
    TH1F *htmp;
-   double a = 1085;
-   double b = 1150;
-   double fa = 1105;
-   double fb = 1125;
    char namePeaktmp[50];
    ofstream cout("output.txt");
+   a = 1090;
+   b = 1190;
    for(int i = 0; i < 15; i++){
        mtdLi_dvert = (i+1)*2;
        for(int j = 0; j < 15; j++){
@@ -937,18 +946,21 @@ void sigmaAna(){
        
 	   cout << "--mtdL" << i << "dvert" << j << "--" << endl;
 
-	   ftmp = new TF1("ftmp", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol7(4)", a, b);
+	   ftmp = new TF1("ftmp", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol6(4)", a, b);
 	   fsigtmp = new TF1("fsigtmp", "[0]*TMath::Voigt(x+[1],[2],[3])", a, b);
-	   fbgtmp = new TF1("fbgtmp", "pol7(0)", a, b);
-	   
+	   fbgtmp = new TF1("fbgtmp", "pol6(0)", a, b);
+
+	   double par0 = htmp -> GetBinContent(htmp -> GetMaximumBin());
 	   if(j == 0){
 	   ftmp -> SetParameters(
-	       1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
+	       par0,-1.11489e+03,1.35622e+00,1.61722e+00,
 	       -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
 	       );
 	   }else{
 	       ftmp -> SetParameters(partmp);
 	   }
+
+	   
 	   
 	   htmp -> Fit("ftmp", "0", "", a, b);
 	   htmp -> Fit("ftmp", "0", "", a, b);
@@ -959,16 +971,16 @@ void sigmaAna(){
 	   fsigtmp -> SetParameters(partmp);
 	   fbgtmp -> SetParameters(&partmp[4]);
 
-/*	   TH1F *histSigtmp = (TH1F*)htmp -> Clone("histSigtmp");
-	   TH1F *histBGtmp = (TH1F*)htmp -> Clone("histBGtmp");
-	   histSigtmp -> Add(fbgtmp, -1);
-	   histSigtmp -> SetLineColor(kGreen);
-	   histBGtmp -> Add(fsigtmp, -1);
-	   histBGtmp -> SetLineColor(kRed);
-	   histBGtmp -> SetMarkerColor(kRed);
-	   histBGtmp -> SetMarkerStyle(20);
-	   histBGtmp -> SetMarkerSize(.7);
-*/
+//	   TH1F *histSigtmp = (TH1F*)htmp -> Clone("histSigtmp");
+//	   TH1F *histBGtmp = (TH1F*)htmp -> Clone("histBGtmp");
+//	   histSigtmp -> Add(fbgtmp, -1);
+//	   histSigtmp -> SetLineColor(kGreen);
+//	   histBGtmp -> Add(fsigtmp, -1);
+//	   histBGtmp -> SetLineColor(kRed);
+//	   histBGtmp -> SetMarkerColor(kRed);
+//	   histBGtmp -> SetMarkerStyle(20);
+//	   histBGtmp -> SetMarkerSize(.7);
+
 	   ftmp -> SetLineColor(kBlack);
 	   fsigtmp -> SetLineColor(kGreen);
 	   fbgtmp -> SetLineColor(kRed);
@@ -1010,10 +1022,10 @@ void sigmaAna(){
 	   cmtdLdvertSigma[i] -> cd(j+1);
 	   hdvertmtdLscanSigma[i][j] -> Draw();
        }
-   }
+   }*/
 //<<<<<end scans
    //MTD S scan
-   double partmp[12];
+       /*  double partmp[12];
    for(int i = 0; i < 15; i++){
        mtdLpii = (i+1)*2;
        //calc Sgn for each mtdLpi value
@@ -1056,11 +1068,7 @@ void sigmaAna(){
        histBGtmp -> SetMarkerStyle(20);
        histBGtmp -> SetMarkerSize(.7);
        
-/*       double as = histSigtmp -> FindBin(1378);
-       double bs = histSigtmp -> FindBin(1398);
-       double ab = histBGtmp -> FindBin(1378);
-       double bb = histBGtmp -> FindBin(1398);
-*/     sg5 = histSigtmp -> Integral(fa,fb);
+     sg5 = histSigtmp -> Integral(fa,fb);
        bg5 = histBGtmp -> Integral(fa,fb);
        //    histSigtmp -> GetXaxis() -> SetRangeUser(1370,1405);
        //    histBGtmp -> GetXaxis() -> SetRangeUser(1370,1405);
@@ -1091,12 +1099,12 @@ void sigmaAna(){
    gmtdLpiscan -> GetXaxis() -> SetTitle("MTD_{#Lambda#pi^{+}} [mm]");
    gmtdLpiscan -> GetYaxis() -> SetTitle("#alpha = S/sqrt{S+B}");
  //<<<<<
- 
+ */
    
    //BG subtruction
    //L no cuts
-   double fita = 1085;
-   double fitb = 1150;
+   double fita = 1100;
+   double fitb = 1140;
    double fa = 1105;
    double fb = 1125;
    
@@ -1106,12 +1114,13 @@ void sigmaAna(){
    sprintf(namePeakLnc0, "%s_peak", hnameLnc0);
 
    cout << ">>>>>>>>fit BG no cuts<<<<<<<<<" << endl;
-   TF1 * fhistLnc0 = new TF1("fhistLnc0", "[0]*TMath:Voigt(x+[1],[2],[3]) + pol7(4)", fita, fitb);
-   TF1 * fsigLnc0 = new TF1("fsigLnc0", "[0]*TMath:Voigt(x+[1],[2],[3])", fita, fitb);
-   TF1 * fbgLnc0 = new TF1("fbgLnc0", "pol7(0)", fita, fitb);
+   TF1 * fhistLnc0 = new TF1("fhistLnc0", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol6(4)", fita, fitb);
+   TF1 * fsigLnc0 = new TF1("fsigLnc0", "[0]*TMath::Voigt(x+[1],[2],[3])", fita, fitb);
+   TF1 * fbgLnc0 = new TF1("fbgLnc0", "pol6(0)", fita, fitb);
 
+   double par0 = histLnc0 -> GetBinContent(histLnc0 -> GetMaximumBin());
    fhistLnc0 -> SetParameters(//change to params from appr. fit!!!!!!!!!!
-       1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
+       par0,-1.11489e+03,1.35622e+00,1.61722e+00,
        -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
        );
 
@@ -1150,7 +1159,7 @@ void sigmaAna(){
    sprintf(namePeakLnc, "%s_peak", hnameLnc);
 
    cout << ">>>>>>>>fit BG no cuts<<<<<<<<<" << endl;
-   TF1 * fhistLnc = new TF1("fhistLnc", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol7(4)", fita, fitb);
+   TF1 * fhistLnc = new TF1("fhistLnc", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol6(4)", fita, fitb);
    fhistLnc -> SetParameters(
        1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
        -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
@@ -1160,7 +1169,7 @@ void sigmaAna(){
    histLnc -> Fit("fhistLnc", "0", "", fita, fitb);
    histLnc -> SetName(namePeakLnc);
    TF1 * fsigLnc = new TF1("fsigLnc", "[0]*TMath::Voigt(x+[1],[2],[3])", fita, fitb);
-   TF1 * fbgLnc = new TF1("fbgLnc", "pol7(0)", fita, fitb);
+   TF1 * fbgLnc = new TF1("fbgLnc", "pol6(0)", fita, fitb);
    double parLnc[12];
    fhistLnc -> GetParameters(parLnc);
    fsigLnc -> SetParameters(parLnc);
@@ -1195,7 +1204,7 @@ void sigmaAna(){
    sprintf(namePeakLmtd, "%s_peak", hnameLmtd);
 
    cout << ">>>>>>>>fit BG MtdL cut<<<<<<<<<" << endl;
-   TF1 * fhistLmtd = new TF1("fhistLmtd", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol7(4)", fita, fitb);
+   TF1 * fhistLmtd = new TF1("fhistLmtd", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol6(4)", fita, fitb);
    fhistLmtd -> SetParameters(
        1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
        -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
@@ -1205,7 +1214,7 @@ void sigmaAna(){
    histLmtd -> Fit("fhistLmtd", "0", "", fita, fitb);
    histLmtd -> SetName(namePeakLmtd);
    TF1 * fsigLmtd = new TF1("fsigLmtd", "[0]*TMath::Voigt(x+[1],[2],[3])", fita, fitb);
-   TF1 * fbgLmtd = new TF1("fbgLmtd", "pol7(0)", fita, fitb);
+   TF1 * fbgLmtd = new TF1("fbgLmtd", "pol6(0)", fita, fitb);
    double parLmtd[12];
    fhistLmtd -> GetParameters(parLmtd);
    fsigLmtd -> SetParameters(parLmtd);
@@ -1289,9 +1298,21 @@ void sigmaAna(){
    sprintf(namePeakLmtdDvert, "%s_peak", hnameLmtdDvert);
 
    cout << ">>>>>>>>fit BG MtdL dVert cuts<<<<<<<<<" << endl;
-   TF1 * fhistLmtdDvert = new TF1("fhistLmtdDvert", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol7(4)", fita, fitb);
+
+   if(i < 5){
+       fita = 1105;
+       fitb = 1150;
+   }else{
+       fita = 1100;
+       fitb = 1140;
+   }
+   
+   
+   double par0 = histLmtdDvert -> GetBinContent(histLmtdDvert -> GetMaximumBin());
+   TF1 * fhistLmtdDvert = new TF1("fhistLmtdDvert", "[0]*TMath::Voigt(x+[1],[2],[3]) + pol6(4)", fita, fitb);
    fhistLmtdDvert -> SetParameters(
-       1.46482e+04,-1.11489e+03,1.35622e+00,1.61722e+00,
+       //1.46482e+04,
+       par0,-1.11489e+03,1.35622e+00,1.61722e+00,
        -4.21492e+06,3.65727e+03,3.32732e+00,6.71156e-05,-2.55953e-06,-2.31855e-09,2.01121e-12
        );
 
@@ -1299,7 +1320,7 @@ void sigmaAna(){
    histLmtdDvert -> Fit("fhistLmtdDvert", "0", "", fita, fitb);
    histLmtdDvert -> SetName(namePeakLmtdDvert);
    TF1 * fsigLmtdDvert = new TF1("fsigLmtdDvert", "[0]*TMath::Voigt(x+[1],[2],[3]) ", fita, fitb);
-   TF1 * fbgLmtdDvert = new TF1("fbgLmtdDvert", "pol7(0)", fita, fitb);
+   TF1 * fbgLmtdDvert = new TF1("fbgLmtdDvert", "pol6(0)", fita, fitb);
    double parLmtdDvert[12];
    fhistLmtdDvert -> GetParameters(parLmtdDvert);
    fsigLmtdDvert -> SetParameters(parLmtdDvert);
@@ -1330,7 +1351,7 @@ void sigmaAna(){
    //>>>>>>>>>>>>>Sigma<<<<<<<<<<<<<<<<<<<<<<<
    //S no cuts
    int fitS1 = 1200;
-   int fitS2 = 1800;
+   int fitS2 = 1700;
    int fitSsig1 = 1325;
    int fitSsig2 = 1445;
    
@@ -1474,7 +1495,7 @@ void sigmaAna(){
    histSmtdLDvert -> Fit("fhistSmtdLDvert", "0", "", fitS1, fitS2);
    histSmtdLDvert -> Fit("fhistSmtdLDvert", "0", "", fitS1, fitS2);
    histSmtdLDvert -> SetName(namePeakSmtdLDvert);
-   TF1 * fsigSmtdLDvert = new TF1("fsigSmtdLDvert", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) )", fitSsig1,fitSsig2);
+   TF1 * fsigSmtdLDvert = new TF1("fsigSmtdLDvert", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) )", fitS1,fitS2);
    TF1 * fbgSmtdLDvert = new TF1("fbgSmtdLDvert", "pol6(0)", fitS1, fitS2);
    double parSmtdLDvert[12];
    fhistSmtdLDvert -> GetParameters(parSmtdLDvert);
@@ -1733,6 +1754,8 @@ void sigmaAna(){
    hSp -> GetXaxis() -> SetTitle("p_{p#pi^{-}#pi^{+}} [MeV/c]");
 
    hPrimVertZ -> GetXaxis() -> SetTitle("PrimVertZ [mm]");
+   hLDecVertX -> GetXaxis() -> SetTitle("#Lambda DecayVertX [mm]");
+   hLDecVertY -> GetXaxis() -> SetTitle("#Lambda DecayVertY [mm]");
    hLDecVertZ -> GetXaxis() -> SetTitle("#Lambda DecayVertZ [mm]");
    hPrimVertR -> GetXaxis() -> SetTitle("PrimVertR [mm]");
    hLDecVertR -> GetXaxis() -> SetTitle("#Lambda DecayVertR [mm]");
@@ -1748,6 +1771,8 @@ void sigmaAna(){
    hMinTrackDist -> GetYaxis() -> SetTitle("# [a.u.]");
    hMinTrackDistLpi -> GetYaxis() -> SetTitle("# [a.u.]");
    hPrimVertZ -> GetYaxis() -> SetTitle("# [a.u.]");
+   hLDecVertX -> GetYaxis() -> SetTitle("# [a.u.]");
+   hLDecVertY -> GetYaxis() -> SetTitle("# [a.u.]");
    hLDecVertZ -> GetYaxis() -> SetTitle("# [a.u.]");
    hPrimVertR -> GetYaxis() -> SetTitle("# [a.u.]");
    hLDecVertR -> GetYaxis() -> SetTitle("# [a.u.]");
@@ -2116,7 +2141,7 @@ void sigmaAna(){
    hdEdx_Mdc_acc -> Write();
    cPidCuts -> Write();
 //<<<<
-   cMtdScan -> Write();
+   /*  cMtdScan -> Write();
    cMtdScanSigma -> Write();
    gmtdscan -> Write();
    //cdLVScan -> Write();
@@ -2129,11 +2154,13 @@ void sigmaAna(){
        cmtdLdvert[i] -> Write();
        cmtdLdvertSigma[i] -> Write();       
    }
-//   cMtdLpiScan -> Write();
+//   cMtdLpiScan -> Write();*/
 //<<<<
 
 //
    hPrimVertZ -> Write();
+   hLDecVertX -> Write();
+   hLDecVertY -> Write();
    hLDecVertZ -> Write();
    hPrimVertR -> Write();
    hLDecVertR -> Write();
