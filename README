@@ -1,7 +1,13 @@
+########################################################################
+#   In this file you can find a short overview about the analysis      #
+# of the inclusive Sigma+(1385) production in pp collisions at 3.5 GeV #
+########################################################################
 
+A) Lists of the reaction channels possible to analyse:
+- list of the already simulated channels: on git (https://github.com/HADES-Cracovia/Sigma_JK/blob/master/ChannelsDatabaseSigma.txt)
+- list of possible signal and BG channels: on redmine (http://redmine.hades.if.uj.edu.pl/attachments/download/875/BG_reac_sigma.pdf)
 
-- list of simulated channels: on git ()
-- list of possible signal and BG channels: redmine
+B) Macros and root files can be found:
 
 Simulations:
 1. PLUTO: /lustre/nyx/hades/user/jkubos/hades/pp35/simulations/pluto
