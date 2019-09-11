@@ -1,19 +1,14 @@
 #include <TH1F.h>
 
 double peakBG(TH1F* h)
+//double peakBG()
 {
 //=========Macro generated from canvas: Canvas_1/Canvas_1
 //=========  (Wed Jul 10 11:07:50 2019) by ROOT version 6.14/06
-    /* TCanvas *Canvas_1 = new TCanvas("Canvas_1", "Canvas_1",258,116,1658,838);
-   Canvas_1->ToggleEventStatus();
-   Canvas_1->Range(1100,-2444.663,2100,22001.96);
-   Canvas_1->SetFillColor(0);
-   Canvas_1->SetBorderMode(0);
-   Canvas_1->SetBorderSize(2);
-   Canvas_1->SetFrameBorderMode(0);
-   Canvas_1->SetFrameBorderMode(0);
-    */
+    TCanvas *Canvas_1 = new TCanvas("Canvas_1", "Canvas_1",14,63,700,500);
+   
     TH1F *hSm_mtdL_dvert_Lm__1 = (TH1F*)h -> Clone();
+//    TH1F *hSm_mtdL_dvert_Lm = new TH1F("h", "h", 200, 1200, 1800);
 /*   hSm_mtdL_dvert_Lm__1->SetBinContent(12,28);
    hSm_mtdL_dvert_Lm__1->SetBinContent(13,266);
    hSm_mtdL_dvert_Lm__1->SetBinContent(14,744);
@@ -161,13 +156,205 @@ double peakBG(TH1F* h)
    hSm_mtdL_dvert_Lm__1->SetBinContent(156,3);
    hSm_mtdL_dvert_Lm__1->SetEntries(1011899);
 */
-   const int n = 105;
+
+    /////////////////////////////////////////////////////
+/*   hSm_mtdL_dvert_Lm->SetBinContent(16,8);
+   hSm_mtdL_dvert_Lm->SetBinContent(17,55);
+   hSm_mtdL_dvert_Lm->SetBinContent(18,114);
+   hSm_mtdL_dvert_Lm->SetBinContent(19,158);
+   hSm_mtdL_dvert_Lm->SetBinContent(20,286);
+   hSm_mtdL_dvert_Lm->SetBinContent(21,415);
+   hSm_mtdL_dvert_Lm->SetBinContent(22,546);
+   hSm_mtdL_dvert_Lm->SetBinContent(23,650);
+   hSm_mtdL_dvert_Lm->SetBinContent(24,810);
+   hSm_mtdL_dvert_Lm->SetBinContent(25,944);
+   hSm_mtdL_dvert_Lm->SetBinContent(26,1002);
+   hSm_mtdL_dvert_Lm->SetBinContent(27,1094);
+   hSm_mtdL_dvert_Lm->SetBinContent(28,1169);
+   hSm_mtdL_dvert_Lm->SetBinContent(29,1192);
+   hSm_mtdL_dvert_Lm->SetBinContent(30,1380);
+   hSm_mtdL_dvert_Lm->SetBinContent(31,1412);
+   hSm_mtdL_dvert_Lm->SetBinContent(32,1490);
+   hSm_mtdL_dvert_Lm->SetBinContent(33,1494);
+   hSm_mtdL_dvert_Lm->SetBinContent(34,1585);
+   hSm_mtdL_dvert_Lm->SetBinContent(35,1645);
+   hSm_mtdL_dvert_Lm->SetBinContent(36,1730);
+   hSm_mtdL_dvert_Lm->SetBinContent(37,1816);
+   hSm_mtdL_dvert_Lm->SetBinContent(38,1832);
+   hSm_mtdL_dvert_Lm->SetBinContent(39,1914);
+   hSm_mtdL_dvert_Lm->SetBinContent(40,1890);
+   hSm_mtdL_dvert_Lm->SetBinContent(41,2021);
+   hSm_mtdL_dvert_Lm->SetBinContent(42,2056);
+   hSm_mtdL_dvert_Lm->SetBinContent(43,2186);
+   hSm_mtdL_dvert_Lm->SetBinContent(44,2135);
+   hSm_mtdL_dvert_Lm->SetBinContent(45,2134);
+   hSm_mtdL_dvert_Lm->SetBinContent(46,2205);
+   hSm_mtdL_dvert_Lm->SetBinContent(47,2199);
+   hSm_mtdL_dvert_Lm->SetBinContent(48,2328);
+   hSm_mtdL_dvert_Lm->SetBinContent(49,2250);
+   hSm_mtdL_dvert_Lm->SetBinContent(50,2395);
+   hSm_mtdL_dvert_Lm->SetBinContent(51,2466);
+   hSm_mtdL_dvert_Lm->SetBinContent(52,2578);
+   hSm_mtdL_dvert_Lm->SetBinContent(53,2454);
+   hSm_mtdL_dvert_Lm->SetBinContent(54,2565);
+   hSm_mtdL_dvert_Lm->SetBinContent(55,2666);
+   hSm_mtdL_dvert_Lm->SetBinContent(56,2605);
+   hSm_mtdL_dvert_Lm->SetBinContent(57,2736);
+   hSm_mtdL_dvert_Lm->SetBinContent(58,2688);
+   hSm_mtdL_dvert_Lm->SetBinContent(59,2772);
+   hSm_mtdL_dvert_Lm->SetBinContent(60,2895);
+   hSm_mtdL_dvert_Lm->SetBinContent(61,2850);
+   hSm_mtdL_dvert_Lm->SetBinContent(62,2734);
+   hSm_mtdL_dvert_Lm->SetBinContent(63,2754);
+   hSm_mtdL_dvert_Lm->SetBinContent(64,2626);
+   hSm_mtdL_dvert_Lm->SetBinContent(65,2574);
+   hSm_mtdL_dvert_Lm->SetBinContent(66,2509);
+   hSm_mtdL_dvert_Lm->SetBinContent(67,2547);
+   hSm_mtdL_dvert_Lm->SetBinContent(68,2375);
+   hSm_mtdL_dvert_Lm->SetBinContent(69,2392);
+   hSm_mtdL_dvert_Lm->SetBinContent(70,2427);
+   hSm_mtdL_dvert_Lm->SetBinContent(71,2279);
+   hSm_mtdL_dvert_Lm->SetBinContent(72,2297);
+   hSm_mtdL_dvert_Lm->SetBinContent(73,2230);
+   hSm_mtdL_dvert_Lm->SetBinContent(74,2325);
+   hSm_mtdL_dvert_Lm->SetBinContent(75,2242);
+   hSm_mtdL_dvert_Lm->SetBinContent(76,2205);
+   hSm_mtdL_dvert_Lm->SetBinContent(77,2217);
+   hSm_mtdL_dvert_Lm->SetBinContent(78,2274);
+   hSm_mtdL_dvert_Lm->SetBinContent(79,2244);
+   hSm_mtdL_dvert_Lm->SetBinContent(80,2292);
+   hSm_mtdL_dvert_Lm->SetBinContent(81,2282);
+   hSm_mtdL_dvert_Lm->SetBinContent(82,2283);
+   hSm_mtdL_dvert_Lm->SetBinContent(83,2235);
+   hSm_mtdL_dvert_Lm->SetBinContent(84,2154);
+   hSm_mtdL_dvert_Lm->SetBinContent(85,2015);
+   hSm_mtdL_dvert_Lm->SetBinContent(86,1927);
+   hSm_mtdL_dvert_Lm->SetBinContent(87,1954);
+   hSm_mtdL_dvert_Lm->SetBinContent(88,1950);
+   hSm_mtdL_dvert_Lm->SetBinContent(89,1826);
+   hSm_mtdL_dvert_Lm->SetBinContent(90,1873);
+   hSm_mtdL_dvert_Lm->SetBinContent(91,1758);
+   hSm_mtdL_dvert_Lm->SetBinContent(92,1766);
+   hSm_mtdL_dvert_Lm->SetBinContent(93,1790);
+   hSm_mtdL_dvert_Lm->SetBinContent(94,1657);
+   hSm_mtdL_dvert_Lm->SetBinContent(95,1628);
+   hSm_mtdL_dvert_Lm->SetBinContent(96,1545);
+   hSm_mtdL_dvert_Lm->SetBinContent(97,1452);
+   hSm_mtdL_dvert_Lm->SetBinContent(98,1311);
+   hSm_mtdL_dvert_Lm->SetBinContent(99,1300);
+   hSm_mtdL_dvert_Lm->SetBinContent(100,1207);
+   hSm_mtdL_dvert_Lm->SetBinContent(101,1092);
+   hSm_mtdL_dvert_Lm->SetBinContent(102,1038);
+   hSm_mtdL_dvert_Lm->SetBinContent(103,1057);
+   hSm_mtdL_dvert_Lm->SetBinContent(104,1085);
+   hSm_mtdL_dvert_Lm->SetBinContent(105,941);
+   hSm_mtdL_dvert_Lm->SetBinContent(106,931);
+   hSm_mtdL_dvert_Lm->SetBinContent(107,1000);
+   hSm_mtdL_dvert_Lm->SetBinContent(108,946);
+   hSm_mtdL_dvert_Lm->SetBinContent(109,906);
+   hSm_mtdL_dvert_Lm->SetBinContent(110,947);
+   hSm_mtdL_dvert_Lm->SetBinContent(111,896);
+   hSm_mtdL_dvert_Lm->SetBinContent(112,861);
+   hSm_mtdL_dvert_Lm->SetBinContent(113,813);
+   hSm_mtdL_dvert_Lm->SetBinContent(114,794);
+   hSm_mtdL_dvert_Lm->SetBinContent(115,907);
+   hSm_mtdL_dvert_Lm->SetBinContent(116,810);
+   hSm_mtdL_dvert_Lm->SetBinContent(117,818);
+   hSm_mtdL_dvert_Lm->SetBinContent(118,790);
+   hSm_mtdL_dvert_Lm->SetBinContent(119,773);
+   hSm_mtdL_dvert_Lm->SetBinContent(120,715);
+   hSm_mtdL_dvert_Lm->SetBinContent(121,714);
+   hSm_mtdL_dvert_Lm->SetBinContent(122,716);
+   hSm_mtdL_dvert_Lm->SetBinContent(123,658);
+   hSm_mtdL_dvert_Lm->SetBinContent(124,653);
+   hSm_mtdL_dvert_Lm->SetBinContent(125,623);
+   hSm_mtdL_dvert_Lm->SetBinContent(126,621);
+   hSm_mtdL_dvert_Lm->SetBinContent(127,642);
+   hSm_mtdL_dvert_Lm->SetBinContent(128,603);
+   hSm_mtdL_dvert_Lm->SetBinContent(129,581);
+   hSm_mtdL_dvert_Lm->SetBinContent(130,592);
+   hSm_mtdL_dvert_Lm->SetBinContent(131,553);
+   hSm_mtdL_dvert_Lm->SetBinContent(132,495);
+   hSm_mtdL_dvert_Lm->SetBinContent(133,527);
+   hSm_mtdL_dvert_Lm->SetBinContent(134,499);
+   hSm_mtdL_dvert_Lm->SetBinContent(135,559);
+   hSm_mtdL_dvert_Lm->SetBinContent(136,495);
+   hSm_mtdL_dvert_Lm->SetBinContent(137,487);
+   hSm_mtdL_dvert_Lm->SetBinContent(138,444);
+   hSm_mtdL_dvert_Lm->SetBinContent(139,412);
+   hSm_mtdL_dvert_Lm->SetBinContent(140,444);
+   hSm_mtdL_dvert_Lm->SetBinContent(141,409);
+   hSm_mtdL_dvert_Lm->SetBinContent(142,374);
+   hSm_mtdL_dvert_Lm->SetBinContent(143,380);
+   hSm_mtdL_dvert_Lm->SetBinContent(144,373);
+   hSm_mtdL_dvert_Lm->SetBinContent(145,336);
+   hSm_mtdL_dvert_Lm->SetBinContent(146,367);
+   hSm_mtdL_dvert_Lm->SetBinContent(147,353);
+   hSm_mtdL_dvert_Lm->SetBinContent(148,304);
+   hSm_mtdL_dvert_Lm->SetBinContent(149,308);
+   hSm_mtdL_dvert_Lm->SetBinContent(150,298);
+   hSm_mtdL_dvert_Lm->SetBinContent(151,289);
+   hSm_mtdL_dvert_Lm->SetBinContent(152,280);
+   hSm_mtdL_dvert_Lm->SetBinContent(153,279);
+   hSm_mtdL_dvert_Lm->SetBinContent(154,236);
+   hSm_mtdL_dvert_Lm->SetBinContent(155,219);
+   hSm_mtdL_dvert_Lm->SetBinContent(156,225);
+   hSm_mtdL_dvert_Lm->SetBinContent(157,221);
+   hSm_mtdL_dvert_Lm->SetBinContent(158,206);
+   hSm_mtdL_dvert_Lm->SetBinContent(159,180);
+   hSm_mtdL_dvert_Lm->SetBinContent(160,190);
+   hSm_mtdL_dvert_Lm->SetBinContent(161,172);
+   hSm_mtdL_dvert_Lm->SetBinContent(162,206);
+   hSm_mtdL_dvert_Lm->SetBinContent(163,168);
+   hSm_mtdL_dvert_Lm->SetBinContent(164,157);
+   hSm_mtdL_dvert_Lm->SetBinContent(165,169);
+   hSm_mtdL_dvert_Lm->SetBinContent(166,136);
+   hSm_mtdL_dvert_Lm->SetBinContent(167,113);
+   hSm_mtdL_dvert_Lm->SetBinContent(168,123);
+   hSm_mtdL_dvert_Lm->SetBinContent(169,120);
+   hSm_mtdL_dvert_Lm->SetBinContent(170,133);
+   hSm_mtdL_dvert_Lm->SetBinContent(171,113);
+   hSm_mtdL_dvert_Lm->SetBinContent(172,102);
+   hSm_mtdL_dvert_Lm->SetBinContent(173,106);
+   hSm_mtdL_dvert_Lm->SetBinContent(174,82);
+   hSm_mtdL_dvert_Lm->SetBinContent(175,88);
+   hSm_mtdL_dvert_Lm->SetBinContent(176,72);
+   hSm_mtdL_dvert_Lm->SetBinContent(177,79);
+   hSm_mtdL_dvert_Lm->SetBinContent(178,73);
+   hSm_mtdL_dvert_Lm->SetBinContent(179,61);
+   hSm_mtdL_dvert_Lm->SetBinContent(180,60);
+   hSm_mtdL_dvert_Lm->SetBinContent(181,60);
+   hSm_mtdL_dvert_Lm->SetBinContent(182,45);
+   hSm_mtdL_dvert_Lm->SetBinContent(183,48);
+   hSm_mtdL_dvert_Lm->SetBinContent(184,54);
+   hSm_mtdL_dvert_Lm->SetBinContent(185,34);
+   hSm_mtdL_dvert_Lm->SetBinContent(186,29);
+   hSm_mtdL_dvert_Lm->SetBinContent(187,36);
+   hSm_mtdL_dvert_Lm->SetBinContent(188,29);
+   hSm_mtdL_dvert_Lm->SetBinContent(189,27);
+   hSm_mtdL_dvert_Lm->SetBinContent(190,27);
+   hSm_mtdL_dvert_Lm->SetBinContent(191,17);
+   hSm_mtdL_dvert_Lm->SetBinContent(192,22);
+   hSm_mtdL_dvert_Lm->SetBinContent(193,15);
+   hSm_mtdL_dvert_Lm->SetBinContent(194,20);
+   hSm_mtdL_dvert_Lm->SetBinContent(195,16);
+   hSm_mtdL_dvert_Lm->SetBinContent(196,8);
+   hSm_mtdL_dvert_Lm->SetBinContent(197,11);
+   hSm_mtdL_dvert_Lm->SetBinContent(198,13);
+   hSm_mtdL_dvert_Lm->SetBinContent(199,9);
+   hSm_mtdL_dvert_Lm->SetBinContent(200,10);
+   hSm_mtdL_dvert_Lm->SetBinContent(201,14);
+*/
+    /////////////////////////////////////////////////////
+
+
+    const int n = 105;
    double x[n], y[n];
 
-   int abin = hSm_mtdL_dvert_Lm__1 -> GetMinimumBin();
-   int bbin = hSm_mtdL_dvert_Lm__1 -> GetMaximumBin();
-   double a = hSm_mtdL_dvert_Lm__1 -> GetBinCenter(abin);
-   double b = hSm_mtdL_dvert_Lm__1 -> GetBinCenter(bbin);
+   int abin = hSm_mtdL_dvert_Lm -> GetMinimumBin();
+   int bbin = hSm_mtdL_dvert_Lm -> GetMaximumBin();
+   double a = hSm_mtdL_dvert_Lm -> GetBinCenter(abin);
+   double b = hSm_mtdL_dvert_Lm -> GetBinCenter(bbin);
    double a1 = 1400.;
    double b1 = 1500.;
    double min = 1250.;
@@ -177,14 +364,14 @@ double peakBG(TH1F* h)
    double k = 0;
    int l = 0;
    for(int i = 0; i < n; i++){
-     k = hSm_mtdL_dvert_Lm__1 -> GetBinCenter(j);
+     k = hSm_mtdL_dvert_Lm -> GetBinCenter(j);
      if(k < min || k > max){
        j++;
        continue;
      }
      if(k < a1 || k > b1){
        x[l] = k;
-       y[l] = hSm_mtdL_dvert_Lm__1 -> GetBinContent(j);
+       y[l] = hSm_mtdL_dvert_Lm -> GetBinContent(j);
 //       cout << " l x y: " << l << " " <<  x[l] << " " << y[l] << endl;
        l++;
      }
@@ -240,11 +427,11 @@ double peakBG(TH1F* h)
    fbgSmtdLDvertLm -> SetMarkerStyle(20);
    fbgSmtdLDvertLm -> SetMarkerSize(.5);
    
-//   fhistSmtdLDvertLm -> Draw("same");
-//   fsigSmtdLDvertLm -> Draw("same");
-//   fbgSmtdLDvertLm -> Draw("same");
+   fhistSmtdLDvertLm -> Draw("same");
+   fsigSmtdLDvertLm -> Draw("same");
+   fbgSmtdLDvertLm -> Draw("same");
 //   f1 -> Draw("same");
-//   hSm_mtdL_dvert_Lm__1->Draw("same");
+   hSm_mtdL_dvert_Lm->Draw("same");
 
    return parSmtdLDvertLm[];
 }
