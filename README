@@ -16,4 +16,13 @@ Simulations:
 
 Analysis:
 4. Tifini3 (event filter): /u/jkubos/analiza/pp35/tools/tifini3_event_filters/ef_hyperonp_pp35.*
-5. Final analysis: /u/jkubos/analiza/gitdir/Sigma_JK (on git).
+4a. Run analysis on the batch farm: /lustre/nyx/hades/user/jkubos/hades/pp35/*/filters (where "*" is "exp" or "sim").
+5. Final analysis: /u/jkubos/analiza/gitdir/Sigma_JK (on git):
+   a) input files: after Tifini
+   b) main file: sigmaAna.C
+      - possible to use exp version or to set (uncomment) sim version
+      - set an output file on the end of sigmaAna.C
+   c) PID cuts definitions: Mdc_dEdx_P*.root
+   d) side-band analysis: sideBand.C
+   e) significance values from the sign. map: significance_Mtdl_dvert.txt
+   
