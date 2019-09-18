@@ -145,7 +145,7 @@ void sideBand(){
 //
     double sbl = fbgtmp -> Integral(sbl1, sbl2); //A
     double sbp = fbgtmp -> Integral(sbp1, sbp2); //B
-    double sb = sbl + sbp; //A+B
+    double sb = sbl; //A+B
     double sg = fsigtmp -> Integral(sbl2, sbp1); //D
     double bg = fbgtmp -> Integral(sbl2, sbp1); //C
 
@@ -165,8 +165,8 @@ void sideBand(){
     cout << "sbl1_nb, sbl2_nb: " << sbl1_nb << " " << sbl2_nb << " sbp1_nb, sbp2_nb: " << sbp1_nb << " " << sbp2_nb<< " sbg1_nb, sbg2_nb: " << sbg1_nb << " " << sbg2_nb << " sig1_nb, sig2_nb: " << sig1_nb << " " << sig2_nb  << " bg1_nb, bg2_nb: " << bg1_nb << " " << bg2_nb << endl;
 	
     double sblh = hLm_sb_bg -> Integral(); //A
-    double sbph = hLm_sb_bg -> Integral(); //B
-    double sbh = sblh + sbph; //A+B
+//    double sbph = hLm_sb_bg -> Integral(); //B
+    double sbh = sblh; //A+B
     double sgh = hLsig -> Integral(sig1_nb, sig2_nb); //D
     double bgh = hLbg -> Integral(bg1_nb, bg2_nb); //C
     double sbgh = hLm_sb_sig -> Integral(); //C+D
@@ -176,12 +176,12 @@ void sideBand(){
     hLsig -> GetXaxis() -> SetRangeUser(sbl2, sbp1);
     hLbg -> GetXaxis() -> SetRangeUser(sbl2, sbp1);
     
-    cout << "integral of fitted functions:" << endl <<  " A=" << sbl << " B=" << sbp << " A+B=" << sb << " C=" << bg << " D=" << sg << " x=bg/sb=" << x << endl;
-    cout << "integral of histograms:" << endl <<  " A=" << sblh << " B=" << sbph << " A+B=" << sbh << " C=" << bgh << " D=" << sgh << " C+D=" << sbgh << " xh=bgh/sbh=" << xh << endl;  
+    cout << "integral of fitted functions:" << endl <<  " A+B=" << sb << " C=" << bg << " D=" << sg << " x=bg/sb=" << x << endl;
+    cout << "integral of histograms:" << endl <<  " A+B=" << sbh << " C=" << bgh << " D=" << sgh << " C+D=" << sbgh << " xh=bgh/sbh=" << xh << endl;  
 
     ofstream write("countsSigma.txt", ios_base::app);
-    write <<  "\n integral of fitted functions:" << endl <<  " A=" << sbl << " B=" << sbp << " A+B=" << sb << " C=" << bg << " D=" << sg <<  " x=bg/sb=" << x << endl;
-    write << "integral of histograms:" << endl <<  " A=" << sblh << " B=" << sbph << " A+B=" << sbh << " C=" << bgh << " D=" << sgh << " C+D=" << sbgh << " xh=bgh/sbh=" << xh << endl;  
+    write <<  "\n integral of fitted functions:" << endl <<  " A+B=" << sb << " C=" << bg << " D=" << sg <<  " x=bg/sb=" << x << endl;
+    write << "integral of histograms:" << endl <<  " A+B=" << sbh << " C=" << bgh << " D=" << sgh << " C+D=" << sbgh << " xh=bgh/sbh=" << xh << endl;  
     
     TLegend *l1 = new TLegend(.6,.4,.8,.65);
     l1 -> SetTextSize(.035);
@@ -306,7 +306,7 @@ void sideBand(){
     pt2 -> SetBorderSize(0);
     char nCD2[64], nAB2[64], nC2[64], nD2[64];
     sprintf(nCD2, "#Sigma from #Lambda Signal region = %d", intSigmahAll);
-    sprintf(nAB2, "BG from Sideband = %d = %d", intSigmahSB);
+    sprintf(nAB2, "BG from Sideband = %d", intSigmahSB);
     sprintf(nC2, "BG from Signal region = %d", intSigmahSBnorm);
     sprintf(nD2, "#Sigma from #Lambda peak = %d", intSigmah);
     pt2 -> AddText(nCD2);
@@ -317,10 +317,10 @@ void sideBand(){
 
     TCanvas *c2 = new TCanvas("c2","c2",1200,800);
     c2 -> cd();
-    hSm_mtdL_dvert -> GetXaxis() -> SetTitle("M_{p#pi^{-}#pi^{+}}");
-    hSm_mtdL_dvert -> GetYaxis() -> SetTitle("a.u. [#]");
-    hSm_mtdL_dvert -> GetXaxis() -> SetTitleSize(.05);
-    hSm_mtdL_dvert -> GetXaxis() -> SetLabelSize(.05);
+    hSm_sb_sig -> GetXaxis() -> SetTitle("M_{p#pi^{-}#pi^{+}}");
+    hSm_sb_sig -> GetYaxis() -> SetTitle("a.u. [#]");
+    hSm_sb_sig -> GetXaxis() -> SetTitleSize(.05);
+    hSm_sb_sig -> GetXaxis() -> SetLabelSize(.05);
     
     hSm_sb_sig -> Draw("same");
     hSm_sb_bg -> Draw("same");
