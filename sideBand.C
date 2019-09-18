@@ -46,8 +46,8 @@ void sideBand(){
     for(int i = 106; i < 128; i++){
 	char inName[100];
 	printf("apr07_day_%d.root\n",i);
-	sprintf(inName, "/u/jkubos/analiza/gitdir/Sigma_JK/out_packed/apr07_day_%d.root", i);
-//	sprintf(inName, "/u/jkubos/analiza/gitdir/Sigma_JK/out_packed/apr07_day_%d.root", 112);
+	sprintf(inName, "/u/jkubos/analiza/gitdir/Sigma_JK/out_packed_3/apr07_day_%d.root", i);
+//	sprintf(inName, "/u/jkubos/analiza/gitdir/Sigma_JK/out_packed_3/apr07_day_%d.root", 112);
         tree.Add(inName);
     }
     
@@ -88,12 +88,12 @@ void sideBand(){
 		if((Lm > sbl1 && Lm < sbl2) || (Lm > sbp1 && Lm < sbp2)){
 		    hLm_sb_bg -> Fill(Lm);
 		    hSm_sb_bg -> Fill(Sm);
-		}else if(Lm >= sbl2 &&Lm <= sbp1){
+		}else if(Lm > sbl2 && Lm < sbp1){
 		    hLm_sb_sig -> Fill(Lm);
 		    hSm_sb_sig -> Fill(Sm);
 		}
 		if(Lm > cLm1 && Lm < cLm2)
-		    hSm_mtdL_dvert_Lm -> Fill(Sm);
+		    hSm_mtdL_dvert_Lm -> Fill(Sm); //should be the same as hSm_sb_sig
 	}
 	eventNo = event;
 	heventNo -> Fill(eventNo);
@@ -135,7 +135,7 @@ void sideBand(){
     hLsig -> SetMarkerColor(kGreen);
     hLsig -> SetMarkerStyle(20);
 
-    TH1F *hLbg = (TH1F*)hLm_mtdL_dvert -> Clone("hLsig");
+    TH1F *hLbg = (TH1F*)hLm_mtdL_dvert -> Clone("hLbg");
     hLbg -> Sumw2();
     hLbg -> Add(hLsig, -1);
     hLbg -> SetLineColor(kRed);
@@ -161,13 +161,15 @@ void sideBand(){
     int sig2_nb = hLsig -> GetXaxis() -> FindBin(sbp1);
     int bg1_nb = hLbg -> GetXaxis() -> FindBin(sbl2);
     int bg2_nb = hLbg -> GetXaxis() -> FindBin(sbp1);
+
+    cout << "sbl1_nb, sbl2_nb: " << sbl1_nb << " " << sbl2_nb << " sbp1_nb, sbp2_nb: " << sbp1_nb << " " << sbp2_nb<< " sbg1_nb, sbg2_nb: " << sbg1_nb << " " << sbg2_nb << " sig1_nb, sig2_nb: " << sig1_nb << " " << sig2_nb  << " bg1_nb, bg2_nb: " << bg1_nb << " " << bg2_nb << endl;
 	
-    double sblh = (hLm_sb_bg->GetBinWidth(0))*(hLm_sb_bg -> Integral(sbl1_nb, sbl2_nb)); //A
-    double sbph = (hLm_sb_bg->GetBinWidth(0))*(hLm_sb_bg -> Integral(sbp1_nb, sbp2_nb)); //B
+    double sblh = hLm_sb_bg -> Integral(); //A
+    double sbph = hLm_sb_bg -> Integral(); //B
     double sbh = sblh + sbph; //A+B
-    double sgh = (hLsig->GetBinWidth(0))*(hLsig -> Integral(sig1_nb, sig2_nb)); //D
-    double bgh = (hLbg->GetBinWidth(0))*(hLbg -> Integral(bg1_nb, bg2_nb)); //C
-    double sbgh = (hLm_sb_sig->GetBinWidth(0))*(hLm_sb_sig -> Integral(sbg1_nb, sbg2_nb)); //C+D
+    double sgh = hLsig -> Integral(sig1_nb, sig2_nb); //D
+    double bgh = hLbg -> Integral(bg1_nb, bg2_nb); //C
+    double sbgh = hLm_sb_sig -> Integral(); //C+D
     
     double xh = bgh/sbh;
 
@@ -175,13 +177,13 @@ void sideBand(){
     hLbg -> GetXaxis() -> SetRangeUser(sbl2, sbp1);
     
     cout << "integral of fitted functions:" << endl <<  " A=" << sbl << " B=" << sbp << " A+B=" << sb << " C=" << bg << " D=" << sg << " x=bg/sb=" << x << endl;
-    cout << "integral of histograms:" << endl <<  " A=" << sblh << " B=" << sbph << " A+B=" << sbh << " C=" << bgh << " D=" << sgh << " xh=bgh/sbh=" << xh << endl;  
+    cout << "integral of histograms:" << endl <<  " A=" << sblh << " B=" << sbph << " A+B=" << sbh << " C=" << bgh << " D=" << sgh << " C+D=" << sbgh << " xh=bgh/sbh=" << xh << endl;  
 
     ofstream write("countsSigma.txt", ios_base::app);
     write <<  "\n integral of fitted functions:" << endl <<  " A=" << sbl << " B=" << sbp << " A+B=" << sb << " C=" << bg << " D=" << sg <<  " x=bg/sb=" << x << endl;
-    write << "integral of histograms:" << endl <<  " A=" << sblh << " B=" << sbph << " A+B=" << sbh << " C=" << bgh << " D=" << sgh << " xh=bgh/sbh=" << xh << endl;  
+    write << "integral of histograms:" << endl <<  " A=" << sblh << " B=" << sbph << " A+B=" << sbh << " C=" << bgh << " D=" << sgh << " C+D=" << sbgh << " xh=bgh/sbh=" << xh << endl;  
     
-    TLegend *l1 = new TLegend(.6,.4,.8,.7);
+    TLegend *l1 = new TLegend(.6,.4,.8,.65);
     l1 -> SetTextSize(.035);
     l1 -> SetBorderSize(0);
     l1 -> SetFillColor(0);
@@ -201,6 +203,7 @@ void sideBand(){
     TCanvas *c1 = new TCanvas("c1","c1", 1200, 800);
     c1 -> cd();
     hLm_mtdL_dvert -> GetXaxis() -> SetTitle("M_{p#pi^{-}}");
+    hLm_mtdL_dvert -> GetYaxis() -> SetTitle("a.u. [#]");
     hLm_mtdL_dvert -> GetXaxis() -> SetTitleSize(.05);
     hLm_mtdL_dvert -> GetXaxis() -> SetLabelSize(.05);
 
@@ -244,19 +247,33 @@ void sideBand(){
     hsignal1h -> SetMarkerColor(kMagenta);
     hsignal1h -> SetMarkerStyle(20);
 
+    int sigmaAll1_nb = hSm_sb_sig -> GetMinimumBin();
+    int sigmaAll2_nb = hSm_sb_sig -> GetMaximumBin();
+    int sigmaSB1_nb = hSm_sb_bg -> GetMinimumBin();
+    int sigmaSB2_nb = hSm_sb_bg -> GetMaximumBin();
+    int sigmaSBnorm1_nb = hsbgnormh -> GetMinimumBin();
+    int sigmaSBnorm2_nb = hsbgnormh -> GetMaximumBin();
+    int sigma1_nb = hsignal1h -> GetMinimumBin();
+    int sigma2_nb = hsignal1h -> GetMaximumBin();
+    
     double intSigma = (hsignal1->GetBinWidth(0))*(hsignal1 -> Integral());
     cout << "Sigma=" << intSigma << endl;
     write << "Sigma=" << intSigma << endl;
 
-    double intSigmah = (hsignal1h->GetBinWidth(0))*(hsignal1h -> Integral());
-    cout << "Sigmah=" << intSigmah << endl;
-    write << "Sigmah=" << intSigmah << endl;
+    
+    double intSigmahAll = hSm_sb_sig -> Integral();
+    double intSigmahSB = hSm_sb_bg -> Integral();
+    double intSigmahSBnorm = hsbgnormh -> Integral();
+    double intSigmah = hsignal1h -> Integral();
+
+    cout << "SigmaAll=" << intSigmahAll << " SigmaSB=" << intSigmahSB << " SigmaSBnorm=" << intSigmahSBnorm << " Sigmah=" << intSigmah << endl;
+    write << "SigmaAll=" << intSigmahAll << " SigmaSB=" << intSigmahSB << " SigmaSBnorm=" << intSigmahSBnorm << " Sigmah=" << intSigmah << endl;
     write.close();
 
     hSm_sb_bg -> SetLineColor(kRed);
 //    hSm_sb_bg -> SetLineStyle(9);
 
-    TLegend *l2 = new TLegend(.55,.4,.7,.7);
+    TLegend *l2 = new TLegend(.55,.4,.7,.65);
     l2 -> SetTextSize(.035);
     l2 -> SetBorderSize(0);
     l2 -> SetFillColor(0);
@@ -272,20 +289,36 @@ void sideBand(){
     pt -> SetFillColor(0);
     pt -> SetBorderSize(0);
     char nCD[32], nAB[64], nC[32], nD[32],  nstsb[32];
-    sprintf(nCD, "N Signal region = %.2f", sbh+bgh);
-    sprintf(nC, "N BG in Signal region = %.2f", bgh);
-    sprintf(nD, "N S in Signal region = %.2f", sgh);
-    sprintf(nAB, "N Sideband = %.2f + %.2f = %.2f", sblh, sbph, sbh);
+    sprintf(nCD, "N Signal region = %.0f", sbgh);
+    sprintf(nC, "N BG in Signal region = %.0f", bgh);
+    sprintf(nD, "N S in Signal region = %.0f", sgh);
+    sprintf(nAB, "N Sideband = %.0f + %.0f = %.0f", sblh, sbph, sbh);
 //    sprintf(stsb, "StSB = %.3f", StSB);
     pt -> AddText(nCD);
+    pt -> AddText(nAB);
     pt -> AddText(nC);
     pt -> AddText(nD);
-    pt -> AddText(nAB);
 //    pt -> AddText(stsb);
+
+    TPaveText *pt2 = new TPaveText(.55,.7,.6,.85, "NDC");
+    pt2 -> SetTextSize(.033);
+    pt2 -> SetFillColor(0);
+    pt2 -> SetBorderSize(0);
+    char nCD2[64], nAB2[64], nC2[64], nD2[64];
+    sprintf(nCD2, "#Sigma from #Lambda Signal region = %d", intSigmahAll);
+    sprintf(nAB2, "BG from Sideband = %d = %d", intSigmahSB);
+    sprintf(nC2, "BG from Signal region = %d", intSigmahSBnorm);
+    sprintf(nD2, "#Sigma from #Lambda peak = %d", intSigmah);
+    pt2 -> AddText(nCD2);
+    pt2 -> AddText(nAB2);
+    pt2 -> AddText(nC2);
+    pt2 -> AddText(nD2);
+    
 
     TCanvas *c2 = new TCanvas("c2","c2",1200,800);
     c2 -> cd();
     hSm_mtdL_dvert -> GetXaxis() -> SetTitle("M_{p#pi^{-}#pi^{+}}");
+    hSm_mtdL_dvert -> GetYaxis() -> SetTitle("a.u. [#]");
     hSm_mtdL_dvert -> GetXaxis() -> SetTitleSize(.05);
     hSm_mtdL_dvert -> GetXaxis() -> SetLabelSize(.05);
     
@@ -296,11 +329,12 @@ void sideBand(){
     hsbgnormh -> Draw("same p");
     hsignal1h -> Draw("same p");
     l2 -> Draw("same");
-
+    pt2 -> Draw("same");
+    
     c1 -> cd();
     pt -> Draw("same");
     
-    TFile *fout = TFile::Open("./sbTest.root", "RECREATE");
+    TFile *fout = TFile::Open("./sb_out_3_test.root", "RECREATE");
     hLm_mtdL_dvert -> Write();
     hLm_sb_bg -> Write();
     hLm_sb_sig -> Write();
