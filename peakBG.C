@@ -5,8 +5,8 @@ double peakBG(TH1F* h)
 {
 //=========Macro generated from canvas: Canvas_1/Canvas_1
 //=========  (Wed Jul 10 11:07:50 2019) by ROOT version 6.14/06
-    TCanvas *Canvas_1 = new TCanvas("Canvas_1", "Canvas_1",14,63,700,500);
-   
+//    TCanvas *Canvas_1 = new TCanvas("Canvas_1", "Canvas_1",14,63,700,500);
+
     TH1F *hSm_mtdL_dvert_Lm__1 = (TH1F*)h -> Clone();
 //    TH1F *hSm_mtdL_dvert_Lm = new TH1F("h", "h", 200, 1200, 1800);
 /*   hSm_mtdL_dvert_Lm__1->SetBinContent(12,28);
@@ -403,7 +403,8 @@ double peakBG(TH1F* h)
 */ 
    TF1 * fhistSmtdLDvertLm = new TF1("fhistSmtdLDvertLm", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) ) + pol6(3)", fitS1, fitS2);
    fhistSmtdLDvertLm -> SetParameters(
-				      4.62946e+09,40,1376.04,-747286,-3544.78,9.34086,-0.00679285,1.57678e-06,6.18276e-16
+//				      4.62946e+09,40,1376.04,-747286,-3544.78,9.34086,-0.00679285,1.57678e-06,6.18276e-16
+       1.081797e+09,40,1380.015,487441.9,-4322.406,8.702918,-0.006847541,1.859547e-06,2.237277e-10,-1.392982e-13
        );
    fhistSmtdLDvertLm -> SetParLimits(0,0,10000000000);
    fhistSmtdLDvertLm -> SetParLimits(1,30,40);
@@ -427,11 +428,11 @@ double peakBG(TH1F* h)
    fbgSmtdLDvertLm -> SetMarkerStyle(20);
    fbgSmtdLDvertLm -> SetMarkerSize(.5);
    
-   fhistSmtdLDvertLm -> Draw("same");
-   fsigSmtdLDvertLm -> Draw("same");
-   fbgSmtdLDvertLm -> Draw("same");
+//   fhistSmtdLDvertLm -> Draw("same");
+//   fsigSmtdLDvertLm -> Draw("same");
+//   fbgSmtdLDvertLm -> Draw("same");
 //   f1 -> Draw("same");
-   hSm_mtdL_dvert_Lm->Draw("same");
-
+//   hSm_mtdL_dvert_Lm->Draw("same");
+						    
    return parSmtdLDvertLm[];
 }

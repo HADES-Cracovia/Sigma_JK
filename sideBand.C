@@ -128,14 +128,16 @@ void sideBand(){
     fsigtmp -> SetLineColor(kGreen);
     fbgtmp -> SetLineColor(kRed);
 
-    TH1F *hLsig = (TH1F*)hLm_mtdL_dvert -> Clone("hLsig");
+//    TH1F *hLsig = (TH1F*)hLm_mtdL_dvert -> Clone("hLsig");
+    TH1F *hLsig = (TH1F*)hLm_sb_sig -> Clone("hLsig");
     hLsig -> Sumw2(); 
     hLsig -> Add(fbgtmp, -1);
     hLsig -> SetLineColor(kGreen);
     hLsig -> SetMarkerColor(kGreen);
     hLsig -> SetMarkerStyle(20);
 
-    TH1F *hLbg = (TH1F*)hLm_mtdL_dvert -> Clone("hLbg");
+//    TH1F *hLbg = (TH1F*)hLm_mtdL_dvert -> Clone("hLbg");
+    TH1F *hLbg = (TH1F*)hLm_sb_sig -> Clone("hLbg");
     hLbg -> Sumw2();
     hLbg -> Add(hLsig, -1);
     hLbg -> SetLineColor(kRed);
@@ -169,7 +171,7 @@ void sideBand(){
     double sbh = sblh; //A+B
     double sgh = hLsig -> Integral(sig1_nb, sig2_nb); //D
     double bgh = hLbg -> Integral(bg1_nb, bg2_nb); //C
-    double sbgh = hLm_sb_sig -> Integral(); //C+D
+    double sbgh = hLm_sb_sig -> Integral(sbg1_nb, sbg2_nb); //C+D
     
     double xh = bgh/sbh;
 
@@ -247,6 +249,39 @@ void sideBand(){
     hsignal1h -> SetMarkerColor(kMagenta);
     hsignal1h -> SetMarkerStyle(20);
 
+    //fit
+    double par1 = hsignal1h -> GetMaximum();
+    
+    int fitS1 = 1255;
+    int fitS2 = 1560;
+    
+    TF1 * fhistSmtdLDvertLm = new TF1("fhistSmtdLDvertLm", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) ) + pol6(3)", fitS1, fitS2);
+    fhistSmtdLDvertLm -> SetParameters(
+	par1,40,1376.04,-747286,-3544.78,9.34086,-0.00679285,1.57678e-06,6.18276e-16
+	);
+    fhistSmtdLDvertLm -> SetParLimits(0,0,1000000);
+    fhistSmtdLDvertLm -> SetParLimits(1,30,45);
+    fhistSmtdLDvertLm -> SetParLimits(2,1360,1400);
+
+    hsignal1h -> Fit("fhistSmtdLDvertLm", "0", "", fitS1, fitS2);
+    hsignal1h -> Fit("fhistSmtdLDvertLm", "0", "", fitS1, fitS2);
+
+    TF1 * fsigSmtdLDvertLm = new TF1("fsigSmtdLDvertLm", "[0]*[1]*[1]/( (x*x-[2]*[2])*(x*x-[2]*[2]) + (x*x*x*x*[1]*[1]/([2]*[2])) )", fitS1, fitS2);
+    TF1 * fbgSmtdLDvertLm = new TF1("fbgSmtdLDvertLm", "pol6(0)", fitS1, fitS2);
+    double parSmtdLDvertLm[12];
+    fhistSmtdLDvertLm -> GetParameters(parSmtdLDvertLm);
+    fsigSmtdLDvertLm -> SetParameters(parSmtdLDvertLm);
+    fbgSmtdLDvertLm -> SetParameters(&parSmtdLDvertLm[3]);
+
+    fsigSmtdLDvertLm -> SetLineColor(kBlack);
+    fsigSmtdLDvertLm -> SetMarkerColor(kBlack);
+    fsigSmtdLDvertLm -> SetMarkerStyle(20);
+    fsigSmtdLDvertLm -> SetMarkerSize(.5);
+    fbgSmtdLDvertLm -> SetLineColor(kBlue);
+    fbgSmtdLDvertLm -> SetMarkerColor(kBlue);
+    fbgSmtdLDvertLm -> SetMarkerStyle(20);
+    fbgSmtdLDvertLm -> SetMarkerSize(.5);
+    
     int sigmaAll1_nb = hSm_sb_sig -> GetMinimumBin();
     int sigmaAll2_nb = hSm_sb_sig -> GetMaximumBin();
     int sigmaSB1_nb = hSm_sb_bg -> GetMinimumBin();
@@ -292,7 +327,7 @@ void sideBand(){
     sprintf(nCD, "N Signal region = %.0f", sbgh);
     sprintf(nC, "N BG in Signal region = %.0f", bgh);
     sprintf(nD, "N S in Signal region = %.0f", sgh);
-    sprintf(nAB, "N Sideband = %.0f + %.0f = %.0f", sblh, sbph, sbh);
+    sprintf(nAB, "N Sideband = %.0f", sblh);
 //    sprintf(stsb, "StSB = %.3f", StSB);
     pt -> AddText(nCD);
     pt -> AddText(nAB);
@@ -328,6 +363,8 @@ void sideBand(){
 //    hsignal1 -> Draw("same");
     hsbgnormh -> Draw("same p");
     hsignal1h -> Draw("same p");
+    fsigSmtdLDvertLm ->  Draw("same");
+    fbgSmtdLDvertLm -> Draw("same");
     l2 -> Draw("same");
     pt2 -> Draw("same");
     
